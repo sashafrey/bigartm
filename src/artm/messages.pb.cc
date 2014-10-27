@@ -1351,7 +1351,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\0132\020.artm.FloatArray\022\036\n\004r_wt\030\002 \003(\0132\020.artm"
     ".FloatArray\"b\n\013ThetaMatrix\022\032\n\nmodel_name"
     "\030\001 \001(\t:\006@model\022\017\n\007item_id\030\002 \003(\005\022&\n\014item_"
-    "weights\030\003 \003(\0132\020.artm.FloatArray\"\301\002\n\026Coll"
+    "weights\030\003 \003(\0132\020.artm.FloatArray\"\323\002\n\026Coll"
     "ectionParserConfig\022B\n\006format\030\001 \001(\0162#.art"
     "m.CollectionParserConfig.Format:\rBagOfWo"
     "rdsUci\022\031\n\021docword_file_path\030\002 \001(\t\022\027\n\017voc"
@@ -1359,16 +1359,16 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\t\022\034\n\024dictionary_file_name\030\005 \001(\t\022!\n\023num_i"
     "tems_per_batch\030\006 \001(\005:\0041000\022\036\n\026cooccurren"
     "ce_file_name\030\007 \001(\t\022\032\n\022cooccurrence_token"
-    "\030\010 \003(\t\"\033\n\006Format\022\021\n\rBagOfWordsUci\020\000\"f\n\024S"
-    "ynchronizeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022"
-    "\027\n\014decay_weight\030\002 \001(\002:\0011\022!\n\023invoke_regul"
-    "arizers\030\003 \001(\010:\004true\"B\n\023InitializeModelAr"
-    "gs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017dictionary_nam"
-    "e\030\002 \001(\t\"\\\n\021GetTopicModelArgs\022\022\n\nmodel_na"
-    "me\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 "
-    "\003(\t\022\020\n\010class_id\030\004 \003(\t\"D\n\022GetThetaMatrixA"
-    "rgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013"
-    ".artm.Batch", 5731);
+    "\030\010 \003(\t\"-\n\006Format\022\021\n\rBagOfWordsUci\020\000\022\020\n\014M"
+    "atrixMarket\020\001\"f\n\024SynchronizeModelArgs\022\022\n"
+    "\nmodel_name\030\001 \001(\t\022\027\n\014decay_weight\030\002 \001(\002:"
+    "\0011\022!\n\023invoke_regularizers\030\003 \001(\010:\004true\"B\n"
+    "\023InitializeModelArgs\022\022\n\nmodel_name\030\001 \001(\t"
+    "\022\027\n\017dictionary_name\030\002 \001(\t\"\\\n\021GetTopicMod"
+    "elArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ntopic_name"
+    "\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\""
+    "D\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030\001 \001("
+    "\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch", 5749);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -14873,6 +14873,7 @@ const ::google::protobuf::EnumDescriptor* CollectionParserConfig_Format_descript
 bool CollectionParserConfig_Format_IsValid(int value) {
   switch(value) {
     case 0:
+    case 1:
       return true;
     default:
       return false;
@@ -14881,6 +14882,7 @@ bool CollectionParserConfig_Format_IsValid(int value) {
 
 #ifndef _MSC_VER
 const CollectionParserConfig_Format CollectionParserConfig::BagOfWordsUci;
+const CollectionParserConfig_Format CollectionParserConfig::MatrixMarket;
 const CollectionParserConfig_Format CollectionParserConfig::Format_MIN;
 const CollectionParserConfig_Format CollectionParserConfig::Format_MAX;
 const int CollectionParserConfig::Format_ARRAYSIZE;

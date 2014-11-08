@@ -47,8 +47,8 @@ class Blas {
   static const int Trans = 112;
   static const int ConfTrans = 113;
 
-  static Blas& mkl();
-  static Blas& builtin();
+  static Blas* mkl();
+  static Blas* builtin();
 
  protected:
   Blas() {};  // Singleton (make constructor private)

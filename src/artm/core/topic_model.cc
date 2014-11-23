@@ -549,6 +549,22 @@ void TopicModel::CalcNormalizers() {
         (*n_t)[topic_id] += sum;
     }
   }
+
+  phi_matrix_.swap(artm::utility::DenseMatrix<float>(token_size(), topic_size()));
+  phi_matrix_.InitializeZeros();
+  for (int token_index = 0; token_index < token_size(); ++token_index) {
+    auto topic_iter = this->GetTopicWeightIterator(token_index);
+    for (int topic_index = 0; topic_index < topic_size(); ++topic_index) {
+      float value = topic_iter[topic_index];
+      if (value < 1e-16) {
+        // Reset small values to 0.0 to avoid performance hit.
+        // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
+        // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
+        value = 0.0f;
+      }
+      phi_matrix_(token_index, topic_index) = value;
+    }
+  }
 }
 
 std::vector<float>* TopicModel::CreateNormalizerVector(ClassId class_id, int topics_count) {

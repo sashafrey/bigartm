@@ -82,6 +82,7 @@ set(SRC_LIST
 	utility/ice.h
 	utility/blas.cc
 	utility/blas.h
+	utility/matrix.h
 )
 
 FILE(GLOB_RECURSE SRC_LIST_OTHER

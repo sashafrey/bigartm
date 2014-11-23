@@ -25,185 +25,10 @@
 #include "artm/core/topic_model.h"
 
 #include "artm/utility/blas.h"
+#include "artm/utility/matrix.h"
 
 namespace util = artm::utility;
 namespace fs = boost::filesystem;
-
-namespace {
-
-template<typename T>
-class DenseMatrix {
- public:
-  DenseMatrix(int no_rows = 0, int no_columns = 0, bool store_by_rows = true)
-    : no_rows_(no_rows),
-    no_columns_(no_columns),
-    store_by_rows_(store_by_rows),
-    data_(nullptr) {
-    if (no_rows > 0 && no_columns > 0) {
-      data_ = new T[no_rows_ * no_columns_];
-    }
-  }
-
-  DenseMatrix(const DenseMatrix<T>& src_matrix) {
-    no_rows_ = src_matrix.no_rows();
-    no_columns_ = src_matrix.no_columns();
-    store_by_rows_ = src_matrix.store_by_rows_;
-    if (no_columns_ >0 && no_rows_ > 0) {
-      data_ = new T[no_rows_ * no_columns_];
-      for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-        data_[i] = src_matrix.get_data()[i];
-      }
-    } else {
-      data_ = nullptr;
-    }
-  }
-
-  ~DenseMatrix() {
-    delete[] data_;
-  }
-
-  void InitializeZeros() {
-    memset(data_, 0, sizeof(T)* no_rows_ * no_columns_);
-  }
-
-  T& operator() (int index_row, int index_col) {
-    assert(index_row < no_rows_);
-    assert(index_col < no_columns_);
-    if (store_by_rows_) {
-      return data_[index_row * no_columns_ + index_col];
-    }
-    return data_[index_col * no_rows_ + index_row];
-  }
-
-  const T& operator() (int index_row, int index_col) const {
-    assert(index_row < no_rows_);
-    assert(index_col < no_columns_);
-    if (store_by_rows_) {
-      return data_[index_row * no_columns_ + index_col];
-    }
-    return data_[index_col * no_rows_ + index_row];
-  }
-
-  DenseMatrix<T>& operator= (const DenseMatrix<T>& src_matrix) {
-    no_rows_ = src_matrix.no_rows();
-    no_columns_ = src_matrix.no_columns();
-    store_by_rows_ = src_matrix.store_by_rows_;
-    if (data_ != nullptr) {
-      delete[] data_;
-    }
-    if (no_columns_ >0 && no_rows_ > 0) {
-      data_ = new T[no_rows_ * no_columns_];
-      for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-        data_[i] = src_matrix.get_data()[i];
-      }
-    } else {
-      data_ = nullptr;
-    }
-
-    return *this;
-  }
-
-  int no_rows() const { return no_rows_; }
-  int no_columns() const { return no_columns_; }
-
-  T* get_data() {
-    return data_;
-  }
-
-  const T* get_data() const {
-    return data_;
-  }
-
- private:
-  int no_rows_;
-  int no_columns_;
-  bool store_by_rows_;
-  T* data_;
-};
-
-template<typename T>
-class CsrMatrix {
- public:
-  explicit CsrMatrix(int m, int n, int nnz) : m_(m), n_(n), nnz_(nnz) {
-    assert(m > 0 && n > 0 && nnz > 0);
-    val_.resize(nnz);
-    col_ind_.resize(nnz);
-    row_ptr_.resize(m + 1);
-  }
-
-  explicit CsrMatrix(int n, std::vector<T>* val, std::vector<int>* row_ptr, std::vector<int>* col_ind) {
-    assert(val != nullptr && row_ptr != nullptr && col_ind != nullptr);
-    m_ = static_cast<int>(row_ptr->size()) - 1;
-    n_ = n;  // this parameter can't be deduced automatically
-    nnz_ = static_cast<int>(val->size());
-    val_.swap(*val);
-    row_ptr_.swap(*row_ptr);
-    col_ind_.swap(*col_ind);
-  }
-
-  void Transpose(artm::utility::Blas* blas) {
-    std::vector<int> row_ptr_new_(n_ + 1);
-    blas->scsr2csc(m_, n_, nnz_, val(), row_ptr(), col_ind(), val(), col_ind(), &row_ptr_new_[0]);
-    int tmp = m_; m_ = n_; n_ = tmp;  // swat(m, n)
-    row_ptr_.swap(row_ptr_new_);
-  }
-
-  T* val() { return &val_[0]; }
-  const T* val() const { return &val_[0]; }
-
-  int* row_ptr() { return &row_ptr_[0]; }
-  const int* row_ptr() const { return &row_ptr_[0]; }
-
-  int* col_ind() { return &col_ind_[0]; }
-  const int* col_ind() const { return &col_ind_[0]; }
-
-  int m() const { return m_; }
-  int n() const { return n_; }
-  int nnz() const { return nnz_; }
-
- private:
-  int m_;
-  int n_;
-  int nnz_;
-  std::vector<T> val_;
-  std::vector<int> row_ptr_;
-  std::vector<int> col_ind_;
-};
-
-template<int operation>
-void ApplyByElement(DenseMatrix<float>* result_matrix,
-  const DenseMatrix<float>& first_matrix,
-  const DenseMatrix<float>& second_matrix) {
-  int height = first_matrix.no_rows();
-  int width = first_matrix.no_columns();
-
-  assert(height == second_matrix.no_rows());
-  assert(width == second_matrix.no_columns());
-
-  float* result_data = result_matrix->get_data();
-  const float* first_data = first_matrix.get_data();
-  const float* second_data = second_matrix.get_data();
-  int size = height * width;
-
-  if (operation == 0) {
-    for (int i = 0; i < size; ++i)
-      result_data[i] = first_data[i] * second_data[i];
-  }
-  if (operation == 1) {
-    for (int i = 0; i < size; ++i) {
-      if (first_data[i] == 0 || second_data[i] == 0)
-        result_data[i] = 0;
-      else
-        result_data[i] = first_data[i] / second_data[i];
-    }
-  }
-  if (operation != 0 && operation != 1) {
-    LOG(ERROR) << "In function ApplyByElement() in Processo::ThreadFunction() "
-      << "'operation' argument was set an unsupported value\n";
-  }
-}
-
-}  // namespace
 
 namespace artm {
 namespace core {
@@ -545,8 +370,33 @@ static void PrepareTokenDictionary(const ModelConfig& model,
     }
   }
 
+  token_dict->reserve(batch.token_size());
   for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
     token_dict->push_back(Token(batch.class_id(token_index), batch.token(token_index)));
+  }
+}
+
+static void PrepareBatchToTopicModelMaps(const ModelConfig& model_config, const TopicModel& topic_model,
+                                         const Batch& batch, std::vector<int>* batch_to_model_token_id,
+                                         std::vector<float>* model_class_weight) {
+  std::vector<Token> token_dict;
+  std::map<ClassId, float> class_id_to_weight;
+  PrepareTokenDictionary(model_config, batch, &token_dict, &class_id_to_weight);
+
+  batch_to_model_token_id->reserve(token_dict.size());
+  model_class_weight->assign(topic_model.token_size(), 0.0);
+  for (int i = 0; i < token_dict.size(); ++i) {
+    int token_id = topic_model.token_id(token_dict[i]);
+    batch_to_model_token_id->push_back(token_id);
+
+    if (token_id == -1)
+      continue;
+
+    float class_weight = 1.0;
+    auto class_id_iter = class_id_to_weight.find(token_dict[i].class_id);
+    if (class_id_iter != class_id_to_weight.end())
+      class_weight = class_id_iter->second;
+    (*model_class_weight)[token_id] = class_weight;
   }
 }
 
@@ -611,9 +461,6 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
 
     if (topic_model.has_token(token)) {
       model_increment->add_operation_type(ModelIncrement_OperationType_IncrementValue);
-      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-        counters->add_value(0.0f);
-      }
     } else {
       model_increment->add_operation_type(ModelIncrement_OperationType_CreateIfNotExist);
     }
@@ -622,7 +469,7 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
   return model_increment;
 }
 
-static std::shared_ptr<DenseMatrix<float>>
+static std::shared_ptr<util::DenseMatrix<float>>
 InitializeTheta(const ProcessorInput& part, const ModelConfig& model_config) {
   int topic_size = model_config.topics_count();
 
@@ -635,11 +482,11 @@ InitializeTheta(const ProcessorInput& part, const ModelConfig& model_config) {
     }
   }
 
-  std::shared_ptr<DenseMatrix<float>> Theta;
+  std::shared_ptr<util::DenseMatrix<float>> Theta;
   if (model_config.use_sparse_bow()) {
-    Theta = std::make_shared<DenseMatrix<float>>(topic_size, part.batch().item_size(), false);
+    Theta = std::make_shared<util::DenseMatrix<float>>(topic_size, part.batch().item_size(), false);
   } else {
-    Theta = std::make_shared<DenseMatrix<float>>(topic_size, part.batch().item_size());
+    Theta = std::make_shared<util::DenseMatrix<float>>(topic_size, part.batch().item_size());
   }
 
   Theta->InitializeZeros();
@@ -666,7 +513,7 @@ InitializeTheta(const ProcessorInput& part, const ModelConfig& model_config) {
   return Theta;
 }
 
-static std::shared_ptr<DenseMatrix<float>>
+static std::shared_ptr<util::DenseMatrix<float>>
 InitializePhi(const ProcessorInput& part, const ModelConfig& model_config,
               const ::artm::core::TopicModel& topic_model) {
   bool phi_is_empty = true;
@@ -678,7 +525,7 @@ InitializePhi(const ProcessorInput& part, const ModelConfig& model_config,
   PrepareTokenDictionary(model_config, batch, &token_dict, &class_id_to_weight);
 
   int topic_size = topic_model.topic_size();
-  auto phi_matrix = std::make_shared<DenseMatrix<float>>(batch.token_size(), topic_size);
+  auto phi_matrix = std::make_shared<util::DenseMatrix<float>>(batch.token_size(), topic_size);
   phi_matrix->InitializeZeros();
   for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
     Token token = Token(batch.class_id(token_index), batch.token(token_index));
@@ -711,7 +558,7 @@ InitializePhi(const ProcessorInput& part, const ModelConfig& model_config,
 }
 
 static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch, const ModelConfig& model_config,
-                                        const InstanceSchema& schema, DenseMatrix<float>* Theta) {
+                                        const InstanceSchema& schema, util::DenseMatrix<float>* Theta) {
   int topic_size = model_config.topics_count();
 
   // next section proceed Theta regularization
@@ -769,7 +616,7 @@ static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch, cons
   }
 }
 
-static std::shared_ptr<CsrMatrix<float>>
+static std::shared_ptr<util::CsrMatrix<float>>
 InitializeSparseNdw(const Batch& batch) {
   std::vector<float> n_dw_val;
   std::vector<int> n_dw_row_ptr;
@@ -790,12 +637,12 @@ InitializeSparseNdw(const Batch& batch) {
   }
 
   n_dw_row_ptr.push_back(n_dw_val.size());
-  return std::make_shared<CsrMatrix<float>>(batch.token_size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
+  return std::make_shared<util::CsrMatrix<float>>(batch.token_size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
 }
 
-static std::shared_ptr<DenseMatrix<float>>
+static std::shared_ptr<util::DenseMatrix<float>>
 InitializeDenseNdw(const Batch& batch) {
-  auto n_dw = std::make_shared<DenseMatrix<float>>(batch.token_size(), batch.item_size());
+  auto n_dw = std::make_shared<util::DenseMatrix<float>>(batch.token_size(), batch.item_size());
   n_dw->InitializeZeros();
 
   for (int item_index = 0; item_index < n_dw->no_columns(); ++item_index) {
@@ -812,78 +659,94 @@ InitializeDenseNdw(const Batch& batch) {
   return n_dw;
 }
 
-static std::shared_ptr<DenseMatrix<float>>
+static std::shared_ptr<util::DenseMatrix<float>>
 CalculateNwtSparse(const ModelConfig& model_config, const ProcessorInput& part, const InstanceSchema& schema,
-                   const CsrMatrix<float>& sparse_ndw, const DenseMatrix<float>& phi_matrix,
-                   DenseMatrix<float>* theta_matrix, util::Blas* blas) {
-  auto n_wt = std::make_shared<DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
-  n_wt->InitializeZeros();
+                   const util::CsrMatrix<float>& sparse_ndw, const TopicModel& topic_model,
+                   util::DenseMatrix<float>* theta_matrix, util::Blas* blas) {
+  const util::DenseMatrix<float>& phi_matrix = topic_model.phi_matrix();
 
-  for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
-    DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
-    n_td.InitializeZeros();
+  std::vector<int> batch_to_model_token_id;  // length = batch.token_size(), values = topic_model->token_id()
+  std::vector<float> model_class_weight;     // length = topic_model.token_size(), values = weights of token's class
+  PrepareBatchToTopicModelMaps(model_config, topic_model, part.batch(), &batch_to_model_token_id, &model_class_weight);
 
-    int topics_count = phi_matrix.no_columns();
-    int docs_count = theta_matrix->no_columns();
-    for (int d = 0; d < docs_count; ++d) {
-      for (int i = sparse_ndw.row_ptr()[d]; i < sparse_ndw.row_ptr()[d + 1]; ++i) {
-        int w = sparse_ndw.col_ind()[i];
-        float p_dw_val = blas->sdot(topics_count, &phi_matrix(w, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
-        if (p_dw_val == 0) continue;
-        blas->saxpy(topics_count, sparse_ndw.val()[i] / p_dw_val, &phi_matrix(w, 0), 1, &n_td(0, d), 1);
-      }
-    }
-
-    ApplyByElement<0>(theta_matrix, *theta_matrix, n_td);
-    RegularizeAndNormalizeTheta(inner_iter, part.batch(), model_config, schema, theta_matrix);
-  }
-
-  int tokens_count = phi_matrix.no_rows();
   int topics_count = phi_matrix.no_columns();
   int docs_count = theta_matrix->no_columns();
 
-  CsrMatrix<float> sparse_nwd(sparse_ndw);
+  for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
+    util::DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
+    n_td.InitializeZeros();
+
+    for (int d = 0; d < docs_count; ++d) {
+      for (int i = sparse_ndw.row_ptr()[d]; i < sparse_ndw.row_ptr()[d + 1]; ++i) {
+        int w = sparse_ndw.col_ind()[i];
+        int w2 = batch_to_model_token_id[w];
+        if (w2 != -1) {
+          float p_dw_val = blas->sdot(topics_count, &phi_matrix(w2, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
+          if (p_dw_val == 0) continue;
+          float cw = model_class_weight[w2];
+          blas->saxpy(topics_count, cw * sparse_ndw.val()[i] / p_dw_val, &phi_matrix(w2, 0), 1, &n_td(0, d), 1);
+        }
+      }
+    }
+
+    util::ApplyByElement<0>(theta_matrix, *theta_matrix, n_td);
+    RegularizeAndNormalizeTheta(inner_iter, part.batch(), model_config, schema, theta_matrix);
+  }
+
+  util::CsrMatrix<float> sparse_nwd(sparse_ndw);
   sparse_nwd.Transpose(blas);
+
+  auto n_wt = std::make_shared<util::DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
+  n_wt->InitializeZeros();
 
   // n_wt should be count for items, that have corresponding true-value in stream mask
   // from batch. Or for all items, if such mask doesn't exist
   int model_stream_index = repeated_field_index_of(part.stream_name(), model_config.stream_name());
   if (model_stream_index != -1) {
     const Mask& stream_mask = part.stream_mask(model_stream_index);
-    for (int w = 0; w < tokens_count; ++w) {
+    for (int w = 0; w < sparse_nwd.m(); ++w) {
+      int w2 = batch_to_model_token_id[w];
+      if (w2 == -1)
+        continue;
+      float cw = model_class_weight[w2];
+
       for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
         int d = sparse_nwd.col_ind()[i];
         if (stream_mask.value(d) == false) continue;
-        float p_wd_val = blas->sdot(topics_count, &phi_matrix(w, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
+        float p_wd_val = blas->sdot(topics_count, &phi_matrix(w2, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
         if (p_wd_val == 0) continue;
-        blas->saxpy(topics_count, sparse_nwd.val()[i] / p_wd_val,
-          &(*theta_matrix)(0, d), 1, &(*n_wt)(w, 0), 1);  // NOLINT
+        blas->saxpy(topics_count, cw * sparse_nwd.val()[i] / p_wd_val,
+          &(*theta_matrix)(0, d), 1, &(*n_wt)(w2, 0), 1);  // NOLINT
       }
     }
   } else {
-    for (int w = 0; w < tokens_count; ++w) {
+    for (int w = 0; w < sparse_nwd.m(); ++w) {
+      int w2 = batch_to_model_token_id[w];
+      if (w2 == -1)
+        continue;
+      float cw = model_class_weight[w2];
       for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
         int d = sparse_nwd.col_ind()[i];
-        float p_wd_val = blas->sdot(topics_count, &phi_matrix(w, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
+        float p_wd_val = blas->sdot(topics_count, &phi_matrix(w2, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
         if (p_wd_val == 0) continue;
-        blas->saxpy(topics_count, sparse_nwd.val()[i] / p_wd_val,
-          &(*theta_matrix)(0, d), 1, &(*n_wt)(w, 0), 1);  // NOLINT
+        blas->saxpy(topics_count, cw * sparse_nwd.val()[i] / p_wd_val,
+          &(*theta_matrix)(0, d), 1, &(*n_wt)(w2, 0), 1);  // NOLINT
       }
     }
   }
 
-  ApplyByElement<0>(n_wt.get(), *n_wt, phi_matrix);
+  util::ApplyByElement<0>(n_wt.get(), *n_wt, phi_matrix);
   return n_wt;
 }
 
-static std::shared_ptr<DenseMatrix<float>>
+static std::shared_ptr<util::DenseMatrix<float>>
 CalculateNwtDense(const ModelConfig& model_config, const ProcessorInput& part, const InstanceSchema& schema,
-                  const DenseMatrix<float>& dense_ndw, const DenseMatrix<float>& phi_matrix,
-                  DenseMatrix<float>* theta_matrix, util::Blas* blas) {
-  auto n_wt = std::make_shared<DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
+                  const util::DenseMatrix<float>& dense_ndw, const util::DenseMatrix<float>& phi_matrix,
+                  util::DenseMatrix<float>* theta_matrix, util::Blas* blas) {
+  auto n_wt = std::make_shared<util::DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
   n_wt->InitializeZeros();
 
-  DenseMatrix<float> Z(phi_matrix.no_rows(), theta_matrix->no_columns());
+  util::DenseMatrix<float> Z(phi_matrix.no_rows(), theta_matrix->no_columns());
   for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
     blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
       phi_matrix.no_rows(), theta_matrix->no_columns(), phi_matrix.no_columns(), 1, phi_matrix.get_data(),
@@ -891,17 +754,17 @@ CalculateNwtDense(const ModelConfig& model_config, const ProcessorInput& part, c
       theta_matrix->no_columns());
 
     // Z = n_dw ./ Z
-    ApplyByElement<1>(&Z, dense_ndw, Z);
+    util::ApplyByElement<1>(&Z, dense_ndw, Z);
 
     // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
-    DenseMatrix<float> prod_trans_phi_Z(phi_matrix.no_columns(), Z.no_columns());
+    util::DenseMatrix<float> prod_trans_phi_Z(phi_matrix.no_columns(), Z.no_columns());
 
     blas->sgemm(util::Blas::RowMajor, util::Blas::Trans, util::Blas::NoTrans,
       phi_matrix.no_columns(), Z.no_columns(), phi_matrix.no_rows(), 1, phi_matrix.get_data(),
       phi_matrix.no_columns(), Z.get_data(), Z.no_columns(), 0,
       prod_trans_phi_Z.get_data(), Z.no_columns());
 
-    ApplyByElement<0>(theta_matrix, *theta_matrix, prod_trans_phi_Z);
+    util::ApplyByElement<0>(theta_matrix, *theta_matrix, prod_trans_phi_Z);
     RegularizeAndNormalizeTheta(inner_iter, part.batch(), model_config, schema, theta_matrix);
   }
 
@@ -910,7 +773,7 @@ CalculateNwtDense(const ModelConfig& model_config, const ProcessorInput& part, c
     phi_matrix.no_columns(), theta_matrix->get_data(), theta_matrix->no_columns(), 0, Z.get_data(),
     theta_matrix->no_columns());
 
-  ApplyByElement<1>(&Z, dense_ndw, Z);
+  util::ApplyByElement<1>(&Z, dense_ndw, Z);
 
   int model_stream_index = repeated_field_index_of(part.stream_name(), model_config.stream_name());
   if (model_stream_index != -1) {
@@ -922,8 +785,8 @@ CalculateNwtDense(const ModelConfig& model_config, const ProcessorInput& part, c
       if (stream_mask.value(i) == true) true_value_count++;
     }
 
-    DenseMatrix<float> masked_Z(Z.no_rows(), true_value_count);
-    DenseMatrix<float> masked_Theta(theta_matrix->no_rows(), true_value_count);
+    util::DenseMatrix<float> masked_Z(Z.no_rows(), true_value_count);
+    util::DenseMatrix<float> masked_Theta(theta_matrix->no_rows(), true_value_count);
     int real_index = 0;
     for (int i = 0; i < stream_mask.value_size(); ++i) {
       if (stream_mask.value(i) == true) {
@@ -937,21 +800,21 @@ CalculateNwtDense(const ModelConfig& model_config, const ProcessorInput& part, c
       }
     }
 
-    DenseMatrix<float> prod_Z_Theta(masked_Z.no_rows(), masked_Theta.no_rows());
+    util::DenseMatrix<float> prod_Z_Theta(masked_Z.no_rows(), masked_Theta.no_rows());
     blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
       masked_Z.no_rows(), masked_Theta.no_rows(), masked_Z.no_columns(), 1,
       masked_Z.get_data(), masked_Z.no_columns(), masked_Theta.get_data(),
       masked_Theta.no_columns(), 0, prod_Z_Theta.get_data(), masked_Theta.no_rows());
 
-    ApplyByElement<0>(n_wt.get(), prod_Z_Theta, phi_matrix);
+    util::ApplyByElement<0>(n_wt.get(), prod_Z_Theta, phi_matrix);
   } else {
-    DenseMatrix<float> prod_Z_Theta(Z.no_rows(), theta_matrix->no_rows());
+    util::DenseMatrix<float> prod_Z_Theta(Z.no_rows(), theta_matrix->no_rows());
     blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
       Z.no_rows(), theta_matrix->no_rows(), Z.no_columns(), 1, Z.get_data(),
       Z.no_columns(), theta_matrix->get_data(), theta_matrix->no_columns(), 0,
       prod_Z_Theta.get_data(), theta_matrix->no_rows());
 
-    ApplyByElement<0>(n_wt.get(), prod_Z_Theta, phi_matrix);
+    util::ApplyByElement<0>(n_wt.get(), prod_Z_Theta, phi_matrix);
   }
 
   return n_wt;
@@ -1009,8 +872,8 @@ void Processor::ThreadFunction() {
       std::shared_ptr<InstanceSchema> schema = schema_.get();
       std::vector<ModelName> model_names = schema->GetModelNames();
 
-      std::shared_ptr<CsrMatrix<float>> sparse_ndw;
-      std::shared_ptr<DenseMatrix<float>> dense_ndw;
+      std::shared_ptr<util::CsrMatrix<float>> sparse_ndw;
+      std::shared_ptr<util::DenseMatrix<float>> dense_ndw;
 
       std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
         const ModelConfig& model_config = schema->model_config(model_name);
@@ -1032,48 +895,63 @@ void Processor::ThreadFunction() {
         if (topic_size != model_config.topics_count())
           BOOST_THROW_EXCEPTION(InternalError(
             "Topics count mismatch between model config and physical model representation"));
-
+        
         if (model_config.use_sparse_bow() && (sparse_ndw == nullptr))
           sparse_ndw = InitializeSparseNdw(batch);
 
         if (!model_config.use_sparse_bow() && (dense_ndw == nullptr))
           dense_ndw = InitializeDenseNdw(batch);
 
-        std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(*part, model_config);
+        std::shared_ptr<util::DenseMatrix<float>> theta_matrix = InitializeTheta(*part, model_config);
 
         std::shared_ptr<ModelIncrement> model_increment = InitializeModelIncrement(*part, model_config, *topic_model);
         call_on_destruction c([&]() { merger_queue_->push(model_increment); });
 
-        std::shared_ptr<DenseMatrix<float>> phi_matrix = InitializePhi(*part, model_config, *topic_model);
-        if (phi_matrix == nullptr) {
-          LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
-            "would not be processed on this iteration";
+        if (topic_model->token_size() == 0)
           return;  // return from lambda; goes to next step of std::for_each
-        }
 
-        std::shared_ptr<DenseMatrix<float>> n_wt;
         if (model_config.use_sparse_bow()) {
-          n_wt = CalculateNwtSparse(model_config, *part, *schema_.get(), *sparse_ndw, *phi_matrix,
+          std::shared_ptr<util::DenseMatrix<float>> n_wt;
+          n_wt = CalculateNwtSparse(model_config, *part, *schema_.get(), *sparse_ndw, *topic_model,
                                     theta_matrix.get(), blas);
+
+          std::vector<int> batch_to_model_token_id;  // length = batch.token_size(), values = topic_model->token_id()
+          std::vector<float> model_class_weight;     // length = topic_model.token_size(), values = weights of token's class
+          PrepareBatchToTopicModelMaps(model_config, *topic_model, batch, &batch_to_model_token_id, &model_class_weight);
+
+          for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
+            if (model_increment->operation_type(token_index) != ModelIncrement_OperationType_IncrementValue)
+              continue;
+            int w2 = batch_to_model_token_id[token_index];
+            if (w2 == -1)
+              continue;
+
+            FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
+            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+              float value = (*n_wt)(w2, topic_index);
+              hat_n_wt_cur->add_value(value);
+            }
+          }
         } else {
-          n_wt = CalculateNwtDense(model_config, *part, *schema_.get(), *dense_ndw, *phi_matrix,
-                                   theta_matrix.get(), blas);
-        }
+          std::shared_ptr<util::DenseMatrix<float>> phi_matrix = InitializePhi(*part, model_config, *topic_model);
+          if (phi_matrix == nullptr) {
+            LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
+                         "would not be processed on this iteration";
+            return;  // return from lambda; goes to next step of std::for_each
+          }
 
-        for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {
-          FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
+          std::shared_ptr<util::DenseMatrix<float>> n_wt =
+            CalculateNwtDense(model_config, *part, *schema_.get(), *dense_ndw, *phi_matrix,
+                              theta_matrix.get(), blas);
 
-          if (hat_n_wt_cur->value_size() == 0)
-            continue;
+          for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {
+            if (model_increment->operation_type(token_index) != ModelIncrement_OperationType_IncrementValue)
+              continue;
 
-          if (hat_n_wt_cur->value_size() != topic_size)
-            BOOST_THROW_EXCEPTION(InternalError("hat_n_wt_cur->value_size() != topic_size"));
-
-          if (model_increment->operation_type(token_index) ==
-              ModelIncrement_OperationType_IncrementValue) {
+            FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
             for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
               float value = (*n_wt)(token_index, topic_index);
-              hat_n_wt_cur->set_value(topic_index, value);
+              hat_n_wt_cur->add_value(value);
             }
           }
         }

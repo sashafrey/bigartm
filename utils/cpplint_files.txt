@@ -86,3 +86,4 @@
 ../src/artm/score_sandbox/topic_kernel.h
 ../src/artm/utility/ice.h
 ../src/artm/utility/blas.h
+../src/artm/utility/matrix.h

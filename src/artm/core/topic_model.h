@@ -21,6 +21,8 @@
 #include "artm/core/internals.pb.h"
 #include "artm/core/regularizable.h"
 
+#include "artm/utility/matrix.h"
+
 namespace artm {
 namespace core {
 
@@ -206,6 +208,7 @@ class TopicModel : public Regularizable {
   void AddTopicsInfoInModel(artm::TopicModel* topicModel, int size, const T& names) const;
 
   std::map<ClassId, int> FindDegeneratedTopicsCount() const;
+  const artm::utility::DenseMatrix<float>& phi_matrix() const { return phi_matrix_; }
 
  private:
   ModelName model_name_;
@@ -221,6 +224,8 @@ class TopicModel : public Regularizable {
   std::vector<float>* n_t_default_class_;
 
   std::vector<boost::uuids::uuid> batch_uuid_;  // batches contributing to this model
+
+  artm::utility::DenseMatrix<float> phi_matrix_;  // normalized phi matrix for processor(s)
 
   std::vector<float>* CreateNormalizerVector(ClassId class_id, int no_topics);
   std::vector<float>* GetNormalizerVector(const ClassId& class_id);

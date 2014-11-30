@@ -3,6 +3,7 @@
 #include <ctime>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <vector>
 #include <set>
@@ -15,6 +16,10 @@ namespace fs = boost::filesystem;
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>  // generators
+#include <boost/uuid/uuid_io.hpp>
+
 #include "artm/cpp_interface.h"
 #include "artm/messages.pb.h"
 #include "glog/logging.h"
@@ -24,10 +29,13 @@ class CuckooWatch {
  public:
   explicit CuckooWatch(std::string message)
     : message_(message), start_(std::chrono::high_resolution_clock::now()) {}
-  ~CuckooWatch() {
+  int elapsed_ms() {
     auto delta = (std::chrono::high_resolution_clock::now() - start_);
     auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
-    std::cout << message_ << " " << delta_ms.count() << " milliseconds.\n";
+    return delta_ms.count();
+  }
+  ~CuckooWatch() {
+    std::cout << message_ << " " << elapsed_ms() << " milliseconds.\n";
   }
 
  private:
@@ -58,6 +66,7 @@ struct artm_options {
   std::string proxy;
   std::string localhost;
   std::string dictionary_file;
+  std::string csv_file;
   int num_topics;
   int num_processors;
   int num_iters;
@@ -206,7 +215,22 @@ artm::RegularizerConfig configureDecorRegularizer(float tau, ModelConfig* model_
   return regularizer_config;
 }
 
-int execute(const artm_options& options) {
+int execute(const artm_options& options, int argc, char * argv[]) {
+  boost::uuids::uuid run_id = boost::uuids::random_generator()();
+  std::stringstream original_command;
+  for (int i = 0; i < argc; ++i)
+    original_command << argv[i] << "_";
+
+  std::ofstream csv;
+  if (!options.csv_file.empty()) {
+    csv.open(options.csv_file, std::ios::out | std::ios::app);
+    if (!csv.is_open())
+      std::cerr << "Unable to open " << options.csv_file << " for writting.";
+  }
+
+  if (csv.is_open())
+    csv << run_id << "\t" << "Command" << "\t" << original_command.str() << std::endl;
+
   bool is_network_mode = (options.nodes.size() > 0);
   bool is_proxy = (!options.proxy.empty());
   bool online = (options.online_period > 0);
@@ -316,6 +340,7 @@ int execute(const artm_options& options) {
   model.Initialize(dictionary);
 
   for (int iter = 0; iter < options.num_iters; ++iter) {
+    int iteration_time = 0;
     {
       CuckooWatch timer("Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
 
@@ -334,9 +359,21 @@ int execute(const artm_options& options) {
 
         std::cout << " ";
       }
+
+      iteration_time = timer.elapsed_ms();
     }
 
     if (!options.b_no_scores) {
+
+      if (csv.is_open() && (iter == 0))
+        csv << run_id << "\t" << "Header" << "\t"
+        << "Iteration number\tIteration time (ms)\t"
+        << "Test perplexity\tTrain perplexity\t"
+        << "Test sparsity theta\tTrain sparsity theta\t"
+        << "Sparsity phi\t"
+        << "Test items processed\tTrain items processed\t"
+        << "Kernel size\tKernel purity\tKernel contrast\t\n";
+
       auto test_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(model, "test_perplexity");
       auto train_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(model, "train_perplexity");
       auto test_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(model, "test_sparsity_theta");
@@ -357,6 +394,17 @@ int execute(const artm_options& options) {
         << "\n\tKernel size = " << topic_kernel->average_kernel_size() << ", "
         << "\n\tKernel purity = " << topic_kernel->average_kernel_purity() << ", "
         << "\n\tKernel contrast = " << topic_kernel->average_kernel_contrast() << std::endl;
+
+      if (csv.is_open()) {
+        csv << run_id << "\tIteration\t" << (iter + 1) << "\t" << iteration_time << "\t"
+            << test_perplexity->value() << "\t" << train_perplexity->value() << "\t"
+            << test_sparsity_theta->value() << "\t" << train_sparsity_theta->value() << "\t"
+            << sparsity_phi->value() << "\t"
+            << test_items_processed->value() << "\t" << train_items_processed->value() << "\t"
+            << topic_kernel->average_kernel_size() << "\t"
+            << topic_kernel->average_kernel_purity() << "\t"
+            << topic_kernel->average_kernel_contrast() << "\t\n";
+      }
     }
   }
 
@@ -386,6 +434,12 @@ int execute(const artm_options& options) {
       std::cout << std::endl;
     }
   }
+
+  if (csv.is_open()) {
+    csv.close();
+  }
+
+  return 0;
 }
 
 int main(int argc, char * argv[]) {
@@ -417,6 +471,7 @@ int main(int argc, char * argv[]) {
       ("online_decay", po::value(&options.online_decay)->default_value(0.75f), "decay coefficient [0..1] for online algorithm")
       ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market)")
       ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
+      ("csv", po::value(&options.csv_file)->default_value(""), "output results to csv file")
     ;
     all_options.add(basic_options);
 
@@ -456,7 +511,7 @@ int main(int argc, char * argv[]) {
       return 1;
     }
 
-    return execute(options);
+    return execute(options, argc, argv);
   } catch (std::exception& e) {
     std::cerr << "Exception  : " << e.what() << "\n";
     return 1;

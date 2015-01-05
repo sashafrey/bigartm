@@ -315,6 +315,17 @@ InitializeDenseNdw(const Batch& batch) {
   return n_dw;
 }
 
+static float CalculateMeanDifference(const DenseMatrix<float>& first, const DenseMatrix<float>& second) {
+  assert(first.size() == second.size());
+
+  float retval = 0.0;
+  const float* first_ptr = first.get_data();
+  const float* second_ptr = second.get_data();
+  for (int i = 0; i < first.size(); ++i)
+    retval += fabs(first_ptr[i] - second_ptr[i]);
+  return retval / static_cast<float>(first.size());
+}
+
 static std::shared_ptr<DenseMatrix<float>>
 CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask* mask, const InstanceSchema& schema,
                    const CsrMatrix<float>& sparse_ndw, const DenseMatrix<float>& phi_matrix,
@@ -322,7 +333,10 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
   auto n_wt = std::make_shared<DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
   n_wt->InitializeZeros();
 
-  for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
+  int inner_iter = 0;
+  float last_mean_diff = 0.0f;
+  for (inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
+    DenseMatrix<float> old_theta_matrix(*theta_matrix);
     DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
     n_td.InitializeZeros();
 
@@ -339,7 +353,13 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
 
     AssignDenseMatrixByProduct(*theta_matrix, n_td, theta_matrix);
     RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema, theta_matrix);
+    last_mean_diff = CalculateMeanDifference(old_theta_matrix, *theta_matrix);
+    if (last_mean_diff < model_config.theta_change_threshold())
+      break;
   }
+
+  LOG(INFO) << "Theta matrix converged in " << inner_iter
+            << " inner iterations, last mean change = " << last_mean_diff;
 
   int tokens_count = phi_matrix.no_rows();
   int topics_count = phi_matrix.no_columns();

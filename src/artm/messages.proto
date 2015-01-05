@@ -110,6 +110,7 @@ message ModelConfig {
   repeated float class_weight = 13;
   optional bool use_sparse_bow = 14 [default = true];
   optional bool use_random_theta = 15 [default = false];
+  optional float theta_change_threshold = 16 [default = 1e-7];
 }
 
 // Represents a configuration of a general regularizer

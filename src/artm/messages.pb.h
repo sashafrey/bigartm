@@ -1770,6 +1770,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline bool use_random_theta() const;
   inline void set_use_random_theta(bool value);
 
+  // optional float theta_change_threshold = 16 [default = 1e-007];
+  inline bool has_theta_change_threshold() const;
+  inline void clear_theta_change_threshold();
+  static const int kThetaChangeThresholdFieldNumber = 16;
+  inline float theta_change_threshold() const;
+  inline void set_theta_change_threshold(float value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -1790,6 +1797,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_sparse_bow();
   inline void set_has_use_random_theta();
   inline void clear_has_use_random_theta();
+  inline void set_has_theta_change_threshold();
+  inline void clear_has_theta_change_threshold();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -1805,15 +1814,16 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
+  float theta_change_threshold_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7816,6 +7826,28 @@ inline bool ModelConfig::use_random_theta() const {
 inline void ModelConfig::set_use_random_theta(bool value) {
   set_has_use_random_theta();
   use_random_theta_ = value;
+}
+
+// optional float theta_change_threshold = 16 [default = 1e-007];
+inline bool ModelConfig::has_theta_change_threshold() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void ModelConfig::set_has_theta_change_threshold() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void ModelConfig::clear_has_theta_change_threshold() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void ModelConfig::clear_theta_change_threshold() {
+  theta_change_threshold_ = 1e-007f;
+  clear_has_theta_change_threshold();
+}
+inline float ModelConfig::theta_change_threshold() const {
+  return theta_change_threshold_;
+}
+inline void ModelConfig::set_theta_change_threshold(float value) {
+  set_has_theta_change_threshold();
+  theta_change_threshold_ = value;
 }
 
 // -------------------------------------------------------------------

@@ -366,7 +366,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MasterProxyConfig));
   ModelConfig_descriptor_ = file->message_type(11);
-  static const int ModelConfig_offsets_[15] = {
+  static const int ModelConfig_offsets_[16] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, topics_count_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, topic_name_),
@@ -382,6 +382,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, class_weight_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, use_sparse_bow_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, use_random_theta_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, theta_change_threshold_),
   };
   ModelConfig_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1229,7 +1230,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "int\030\001 \001(\t\022+\n\006config\030\002 \001(\0132\033.artm.MasterC"
     "omponentConfig\022#\n\025communication_timeout\030"
     "\003 \001(\005:\0041000\022\035\n\021polling_frequency\030\004 \001(\005:\002"
-    "50\"\217\003\n\013ModelConfig\022\024\n\004name\030\001 \001(\t:\006@model"
+    "50\"\267\003\n\013ModelConfig\022\024\n\004name\030\001 \001(\t:\006@model"
     "\022\030\n\014topics_count\030\002 \001(\005:\00232\022\022\n\ntopic_name"
     "\030\003 \003(\t\022\025\n\007enabled\030\004 \001(\010:\004true\022\"\n\026inner_i"
     "terations_count\030\005 \001(\005:\00210\022\031\n\nfield_name\030"
@@ -1239,7 +1240,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "regularizer_tau\030\013 \003(\001\022\020\n\010class_id\030\014 \003(\t\022"
     "\024\n\014class_weight\030\r \003(\002\022\034\n\016use_sparse_bow\030"
     "\016 \001(\010:\004true\022\037\n\020use_random_theta\030\017 \001(\010:\005f"
-    "alse\"\274\001\n\021RegularizerConfig\022\014\n\004name\030\001 \001(\t"
+    "alse\022&\n\026theta_change_threshold\030\020 \001(\002:\0061e"
+    "-007\"\274\001\n\021RegularizerConfig\022\014\n\004name\030\001 \001(\t"
     "\022*\n\004type\030\002 \001(\0162\034.artm.RegularizerConfig."
     "Type\022\016\n\006config\030\003 \001(\014\"]\n\004Type\022\025\n\021SmoothSp"
     "arseTheta\020\000\022\023\n\017SmoothSparsePhi\020\001\022\023\n\017Deco"
@@ -1340,7 +1342,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "pic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_i"
     "d\030\004 \003(\t\"m\n\022GetThetaMatrixArgs\022\022\n\nmodel_n"
     "ame\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n"
-    "\ntopic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005", 5758);
+    "\ntopic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005", 5798);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -5076,6 +5078,7 @@ const int ModelConfig::kClassIdFieldNumber;
 const int ModelConfig::kClassWeightFieldNumber;
 const int ModelConfig::kUseSparseBowFieldNumber;
 const int ModelConfig::kUseRandomThetaFieldNumber;
+const int ModelConfig::kThetaChangeThresholdFieldNumber;
 #endif  // !_MSC_VER
 
 ModelConfig::ModelConfig()
@@ -5103,6 +5106,7 @@ void ModelConfig::SharedCtor() {
   reuse_theta_ = false;
   use_sparse_bow_ = true;
   use_random_theta_ = false;
+  theta_change_threshold_ = 1e-007f;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -5170,6 +5174,7 @@ void ModelConfig::Clear() {
     reuse_theta_ = false;
     use_sparse_bow_ = true;
     use_random_theta_ = false;
+    theta_change_threshold_ = 1e-007f;
   }
   topic_name_.Clear();
   score_name_.Clear();
@@ -5449,6 +5454,22 @@ bool ModelConfig::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(133)) goto parse_theta_change_threshold;
+        break;
+      }
+
+      // optional float theta_change_threshold = 16 [default = 1e-007];
+      case 16: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
+         parse_theta_change_threshold:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 input, &theta_change_threshold_)));
+          set_has_theta_change_threshold();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -5576,6 +5597,11 @@ void ModelConfig::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(15, this->use_random_theta(), output);
   }
 
+  // optional float theta_change_threshold = 16 [default = 1e-007];
+  if (has_theta_change_threshold()) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(16, this->theta_change_threshold(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -5692,6 +5718,11 @@ void ModelConfig::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(15, this->use_random_theta(), target);
   }
 
+  // optional float theta_change_threshold = 16 [default = 1e-007];
+  if (has_theta_change_threshold()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(16, this->theta_change_threshold(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -5758,6 +5789,11 @@ int ModelConfig::ByteSize() const {
     // optional bool use_random_theta = 15 [default = false];
     if (has_use_random_theta()) {
       total_size += 1 + 1;
+    }
+
+    // optional float theta_change_threshold = 16 [default = 1e-007];
+    if (has_theta_change_threshold()) {
+      total_size += 2 + 4;
     }
 
   }
@@ -5864,6 +5900,9 @@ void ModelConfig::MergeFrom(const ModelConfig& from) {
     if (from.has_use_random_theta()) {
       set_use_random_theta(from.use_random_theta());
     }
+    if (from.has_theta_change_threshold()) {
+      set_theta_change_threshold(from.theta_change_threshold());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -5902,6 +5941,7 @@ void ModelConfig::Swap(ModelConfig* other) {
     class_weight_.Swap(&other->class_weight_);
     std::swap(use_sparse_bow_, other->use_sparse_bow_);
     std::swap(use_random_theta_, other->use_random_theta_);
+    std::swap(theta_change_threshold_, other->theta_change_threshold_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

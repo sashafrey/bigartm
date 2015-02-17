@@ -82,7 +82,6 @@ TEST(Instance, Basic) {
 
   artm::AddBatchArgs args1;
   args1.mutable_batch()->CopyFrom(batch1);  // +1
-  instance->local_data_loader()->AddBatch(args1);  
 
   artm::Batch batch2;
   for (int i = 0; i < 3; ++i) batch2.add_item();  // +2
@@ -105,8 +104,7 @@ TEST(Instance, Basic) {
   }
 
   artm::AddBatchArgs args4;
-  args4.mutable_batch()->CopyFrom(batch4);
-  instance->local_data_loader()->AddBatch(args4);  // +4
+  args4.mutable_batch()->CopyFrom(batch4); // +4
 
   artm::ModelConfig config;
   config.set_enabled(true);
@@ -162,7 +160,6 @@ TEST(Instance, MultipleStreamsAndModels) {
   auto batch = test.GenerateBatch(6, 6, 0, 1, 1);
   artm::AddBatchArgs add_args;
   add_args.mutable_batch()->CopyFrom(*batch);
-  test.instance()->local_data_loader()->AddBatch(add_args);
 
   ::artm::MasterComponentConfig config;
   artm::Stream* s1 = config.add_stream();
@@ -206,7 +203,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   test.instance()->CreateOrReconfigureModel(m2);
 
   for (int iter = 0; iter < 100; ++iter) {
-    test.instance()->local_data_loader()->InvokeIteration(artm::InvokeIterationArgs());
+    test.instance()->local_data_loader()->AddBatch(add_args);
     test.instance()->local_data_loader()->WaitIdle(artm::WaitIdleArgs());
     test.instance()->merger()->ForceSynchronizeModel(::artm::SynchronizeModelArgs());
   }

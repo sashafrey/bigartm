@@ -33,6 +33,7 @@ class InstanceTest : boost::noncopyable {
   std::shared_ptr<artm::Batch> GenerateBatch(int n_tokens, int n_items, int start_id,
                                              int max_length, int max_occurences) {
     std::shared_ptr<artm::Batch> batch(std::make_shared<artm::Batch>());
+    batch->set_id("2f0d43c9-234f-4f8a-acdb-efe2f2c95d50");
     for (int i = 0; i < n_tokens; ++i) {
       std::stringstream str;
       str << "token" << i;
@@ -71,6 +72,7 @@ TEST(Instance, Basic) {
     ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal);
 
   artm::Batch batch1;
+  batch1.set_id("c722e9bd-28f8-4af0-a4fe-790681982a87");
   batch1.add_token("first token");
   batch1.add_token("second");
   for (int i = 0; i < 2; ++i) {
@@ -83,17 +85,8 @@ TEST(Instance, Basic) {
   artm::AddBatchArgs args1;
   args1.mutable_batch()->CopyFrom(batch1);  // +1
 
-  artm::Batch batch2;
-  for (int i = 0; i < 3; ++i) batch2.add_item();  // +2
-  artm::AddBatchArgs args2;
-  args2.mutable_batch()->CopyFrom(batch2);
-
-  artm::Batch batch3;
-  for (int i = 0; i < 4; ++i) batch3.add_item();  // +3
-  artm::AddBatchArgs args3;
-  args3.mutable_batch()->CopyFrom(batch3);
-
   artm::Batch batch4;
+  batch4.set_id("b60b35ba-50ba-4c88-9cb0-5aa83fd84297");
   batch4.add_token("second");
   batch4.add_token("last");
   artm::Item* item = batch4.add_item();
@@ -104,7 +97,7 @@ TEST(Instance, Basic) {
   }
 
   artm::AddBatchArgs args4;
-  args4.mutable_batch()->CopyFrom(batch4); // +4
+  args4.mutable_batch()->CopyFrom(batch4);  // +4
 
   artm::ModelConfig config;
   config.set_enabled(true);
@@ -116,16 +109,15 @@ TEST(Instance, Basic) {
 
   for (int i = 0; i < 20; ++i) {
     instance->local_data_loader()->AddBatch(args1);
-    instance->local_data_loader()->AddBatch(args2);
-    instance->local_data_loader()->AddBatch(args3);
     instance->local_data_loader()->AddBatch(args4);
+
+    ::artm::WaitIdleArgs wait_args;
+    instance->local_data_loader()->WaitIdle(wait_args);
+    ::artm::SynchronizeModelArgs sync_model_args;
+    sync_model_args.set_model_name(model_name);
+    sync_model_args.set_decay_weight(1.0);
+    instance->merger()->ForceSynchronizeModel(sync_model_args);
   }
-  ::artm::WaitIdleArgs wait_args;
-  instance->local_data_loader()->WaitIdle(wait_args);
-  ::artm::SynchronizeModelArgs sync_model_args;
-  sync_model_args.set_model_name(model_name);
-  sync_model_args.set_decay_weight(1.0);
-  instance->merger()->ForceSynchronizeModel(sync_model_args);
 
   config.set_enabled(false);
   for (int i = 0; i < 3; ++i) {
@@ -160,6 +152,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   auto batch = test.GenerateBatch(6, 6, 0, 1, 1);
   artm::AddBatchArgs add_args;
   add_args.mutable_batch()->CopyFrom(*batch);
+  add_args.set_reset_scores(true);
 
   ::artm::MasterComponentConfig config;
   artm::Stream* s1 = config.add_stream();
@@ -202,7 +195,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   m2.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
   test.instance()->CreateOrReconfigureModel(m2);
 
-  for (int iter = 0; iter < 100; ++iter) {
+  for (int iter = 0; iter < 5; ++iter) {
     test.instance()->local_data_loader()->AddBatch(add_args);
     test.instance()->local_data_loader()->WaitIdle(artm::WaitIdleArgs());
     test.instance()->merger()->ForceSynchronizeModel(::artm::SynchronizeModelArgs());

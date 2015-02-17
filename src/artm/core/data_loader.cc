@@ -132,8 +132,8 @@ bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
   }
   auto pi = std::make_shared<ProcessorInput>();
   pi->mutable_batch()->CopyFrom(*modified_batch);
-  boost::uuids::uuid uuid = boost::uuids::random_generator()();
-  pi->set_batch_uuid(boost::lexical_cast<std::string>(uuid));
+  pi->set_batch_uuid(modified_batch->id());
+  boost::uuids::uuid uuid = boost::lexical_cast<boost::uuids::uuid>(modified_batch->id());
   instance_->batch_manager()->AddAndNext(BatchManagerTask(uuid, std::string()));
   instance_->processor_queue()->push(pi);
 
@@ -204,14 +204,15 @@ void LocalDataLoader::DisposeModel(ModelName model_name) {
 bool LocalDataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
   std::string model_name = get_theta_args.model_name();
-  std::vector<BatchManagerTask> batches = generation_->batch_uuids();
+  std::vector<CacheKey> keys = cache_.keys();
 
-  for (auto &batch : batches) {
-    std::shared_ptr<DataLoaderCacheEntry> cache = cache_.get(CacheKey(batch.uuid, model_name));
-    if (cache == nullptr) {
-      LOG(INFO) << "Unable to find cache entry for model: " << model_name << ", batch: " << batch.uuid;
+  for (auto &key : keys) {
+    if (key.second != model_name)
       continue;
-    }
+
+    std::shared_ptr<DataLoaderCacheEntry> cache = cache_.get(key);
+    if (cache == nullptr)
+      continue;
 
     if (cache->has_filename()) {
       DataLoaderCacheEntry cache_reloaded;

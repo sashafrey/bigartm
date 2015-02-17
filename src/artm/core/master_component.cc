@@ -300,8 +300,8 @@ bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
 }
 
 void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
-  // Reset scores
-  instance_->merger()->ForceResetScores(ModelName());
+  if (args.reset_scores())
+    instance_->merger()->ForceResetScores(ModelName());
 
   if (isInLocalModusOperandi()) {
     instance_->local_data_loader()->InvokeIteration(args);
@@ -326,7 +326,9 @@ void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
 bool MasterComponent::AddBatch(const AddBatchArgs& args) {
   int timeout = args.timeout_milliseconds();
   if (isInLocalModusOperandi()) {
-    auto time_start = boost::posix_time::microsec_clock::local_time();
+    if (args.reset_scores())
+      instance_->merger()->ForceResetScores(ModelName());
+
     return instance_->local_data_loader()->AddBatch(args);
   }
 

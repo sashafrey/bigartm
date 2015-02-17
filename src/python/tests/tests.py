@@ -92,7 +92,6 @@ with MasterComponent() as master_component:
 
   regularizer_phi = master_component.CreateRegularizer('regularizer_2', 1, smsp_phi_config)
 
-  master_component.AddBatch(batch)
   model.Enable()
   for i in range(0, 10):
     master_component.AddBatch(batch)

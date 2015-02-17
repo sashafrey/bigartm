@@ -158,7 +158,6 @@ TEST(MultipleClasses, BasicTest) {
   // Index doc-token matrix
   artm::AddBatchArgs add_batch_args;
   add_batch_args.mutable_batch()->CopyFrom(batch);
-  master_component.AddBatch(add_batch_args);
   int nIters = 5;
   std::shared_ptr< ::artm::ThetaMatrix> theta_matrix1_explicit, theta_matrix2_explicit, theta_matrix3_explicit;
   for (int iter = 0; iter < 5; ++iter) {
@@ -297,7 +296,6 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   artm::Batch batch = GenerateBatch(nTokens, nDocs, "class_one", "class_two");
   artm::AddBatchArgs args;
   args.mutable_batch()->CopyFrom(batch);
-  master_component.AddBatch(args);
 
   artm::ModelConfig model_config1;
   model_config1.set_name("model1"); model_config1.set_topics_count(nTopics);

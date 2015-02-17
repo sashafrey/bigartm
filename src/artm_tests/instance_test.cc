@@ -81,25 +81,18 @@ TEST(Instance, Basic) {
   }
 
   artm::AddBatchArgs args1;
-  args1.mutable_batch()->CopyFrom(batch1);
-  instance->local_data_loader()->AddBatch(args1);  // +2
+  args1.mutable_batch()->CopyFrom(batch1);  // +1
+  instance->local_data_loader()->AddBatch(args1);  
 
   artm::Batch batch2;
-  for (int i = 0; i < 3; ++i) batch2.add_item();  // +3
+  for (int i = 0; i < 3; ++i) batch2.add_item();  // +2
   artm::AddBatchArgs args2;
   args2.mutable_batch()->CopyFrom(batch2);
-  instance->local_data_loader()->AddBatch(args2);
 
   artm::Batch batch3;
-  for (int i = 0; i < 4; ++i) batch3.add_item();  // +4
+  for (int i = 0; i < 4; ++i) batch3.add_item();  // +3
   artm::AddBatchArgs args3;
   args3.mutable_batch()->CopyFrom(batch3);
-  instance->local_data_loader()->AddBatch(args3);
-
-  EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 9);
-
-  instance->local_data_loader()->AddBatch(args1);  // +2
-  EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 11);
 
   artm::Batch batch4;
   batch4.add_token("second");
@@ -113,7 +106,7 @@ TEST(Instance, Basic) {
 
   artm::AddBatchArgs args4;
   args4.mutable_batch()->CopyFrom(batch4);
-  instance->local_data_loader()->AddBatch(args4);
+  instance->local_data_loader()->AddBatch(args4);  // +4
 
   artm::ModelConfig config;
   config.set_enabled(true);

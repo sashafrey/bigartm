@@ -24,7 +24,6 @@ for item_id in range(0, num_items):
 
 # Create master component and infer topic model
 with artm.library.MasterComponent() as master:
-  master.AddBatch(batch)
   perplexity_score = master.CreatePerplexityScore()
   top_tokens_score = master.CreateTopTokensScore(num_tokens = 4)
   model = master.CreateModel(topics_count = 10, inner_iterations_count = 10)

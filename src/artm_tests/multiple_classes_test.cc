@@ -177,7 +177,7 @@ TEST(MultipleClasses, BasicTest) {
       theta_matrix2_explicit = master_component.GetThetaMatrix(gtm2);
       theta_matrix3_explicit = master_component.GetThetaMatrix(gtm3);
     }
-    master_component.InvokeIteration(1);
+    master_component.AddBatch(add_batch_args);
     master_component.WaitIdle();
     model1.Synchronize(0.0);
     model2.Synchronize(0.0);
@@ -319,7 +319,7 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   artm::Model model2(master_component, model_config2);
 
   for (int iter = 0; iter < 5; ++iter) {
-    master_component.InvokeIteration(1);
+    master_component.AddBatch(args);
     master_component.WaitIdle();
     model1.Synchronize(0.0);
     model2.Synchronize(0.0);

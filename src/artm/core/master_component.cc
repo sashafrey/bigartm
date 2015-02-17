@@ -300,13 +300,6 @@ bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
 }
 
 void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
-  if (config_.get()->online_batch_processing()) {
-    std::stringstream str;
-    str << "InvokeIteration() must not be used together with ";
-    str << "MasterComponentConfig.online_batch_processing().";
-    BOOST_THROW_EXCEPTION(InvalidOperation(str.str()));
-  }
-
   // Reset scores
   instance_->merger()->ForceResetScores(ModelName());
 
@@ -417,13 +410,6 @@ void MasterComponent::ValidateConfig(const MasterComponentConfig& config) {
       std::string message = "Changing disk_path is not supported.";
       BOOST_THROW_EXCEPTION(InvalidOperation(message));
     }
-  }
-
-  if (config.cache_theta() && config.online_batch_processing()) {
-    std::stringstream str;
-    str << "MasterComponentConfig.cache_theta() is incompatible with "
-        << "MasterComponentConfig.online_batch_processing()";
-    BOOST_THROW_EXCEPTION(InvalidOperation(str.str()));
   }
 }
 

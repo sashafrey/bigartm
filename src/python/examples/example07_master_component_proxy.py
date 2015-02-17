@@ -38,7 +38,7 @@ with artm.library.MasterComponent(proxy_config) as master:
   model.EnableScore(top_tokens_score)
 
   for iter in range(0, 10):
-    master.InvokeIteration(1)        # Invoke one scan of the entire collection...
+    master.AddBatch(batch)           # Invoke one scan of this batch...
     master.WaitIdle();               # and wait until it completes.
     model.Synchronize();             # Synchronize topic model.
     print "Iter#" + str(iter) + ": Perplexity = %.3f" % perplexity_score.GetValue(model).value

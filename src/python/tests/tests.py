@@ -94,7 +94,8 @@ with MasterComponent() as master_component:
 
   master_component.AddBatch(batch)
   model.Enable()
-  master_component.InvokeIteration(10)
+  for i in range(0, 10):
+    master_component.AddBatch(batch)
   master_component.WaitIdle()
   model.Synchronize(0.0)
   model.Disable()

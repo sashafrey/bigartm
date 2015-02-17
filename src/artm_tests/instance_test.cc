@@ -67,7 +67,6 @@ class InstanceTest : boost::noncopyable {
 
 // artm_tests.exe --gtest_filter=Instance.*
 TEST(Instance, Basic) {
-  bool online_batch_processing = false;
   auto instance = std::make_shared< ::artm::core::Instance>(
     ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal);
 
@@ -82,21 +81,17 @@ TEST(Instance, Basic) {
   }
 
   artm::AddBatchArgs args1;
-  args1.mutable_batch()->CopyFrom(batch1);
-  instance->local_data_loader()->AddBatch(args1);  // +2
+  args1.mutable_batch()->CopyFrom(batch1);  // +1
 
-  for (int iBatch = 0; iBatch < 2; ++iBatch) {
-    artm::Batch batch;
-    for (int i = 0; i < (3 + iBatch); ++i) batch.add_item();  // +3, +4
-    artm::AddBatchArgs args;
-    args.mutable_batch()->CopyFrom(batch);
-    instance->local_data_loader()->AddBatch(args);
-  }
+  artm::Batch batch2;
+  for (int i = 0; i < 3; ++i) batch2.add_item();  // +2
+  artm::AddBatchArgs args2;
+  args2.mutable_batch()->CopyFrom(batch2);
 
-  EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 9);
-
-  instance->local_data_loader()->AddBatch(args1);  // +2
-  EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 11);
+  artm::Batch batch3;
+  for (int i = 0; i < 4; ++i) batch3.add_item();  // +3
+  artm::AddBatchArgs args3;
+  args3.mutable_batch()->CopyFrom(batch3);
 
   artm::Batch batch4;
   batch4.add_token("second");
@@ -108,8 +103,8 @@ TEST(Instance, Basic) {
     field->add_token_count(iToken + 2);
   }
 
-  args1.mutable_batch()->CopyFrom(batch4);
-  instance->local_data_loader()->AddBatch(args1);
+  artm::AddBatchArgs args4;
+  args4.mutable_batch()->CopyFrom(batch4); // +4
 
   artm::ModelConfig config;
   config.set_enabled(true);
@@ -119,9 +114,12 @@ TEST(Instance, Basic) {
   config.set_name(boost::lexical_cast<std::string>(model_name));
   instance->CreateOrReconfigureModel(config);
 
-  artm::InvokeIterationArgs inv_iter_args;
-  inv_iter_args.set_iterations_count(20);
-  instance->local_data_loader()->InvokeIteration(inv_iter_args);
+  for (int i = 0; i < 20; ++i) {
+    instance->local_data_loader()->AddBatch(args1);
+    instance->local_data_loader()->AddBatch(args2);
+    instance->local_data_loader()->AddBatch(args3);
+    instance->local_data_loader()->AddBatch(args4);
+  }
   ::artm::WaitIdleArgs wait_args;
   instance->local_data_loader()->WaitIdle(wait_args);
   ::artm::SynchronizeModelArgs sync_model_args;
@@ -154,7 +152,6 @@ TEST(Instance, Basic) {
 
 // artm_tests.exe --gtest_filter=Instance.MultipleStreamsAndModels
 TEST(Instance, MultipleStreamsAndModels) {
-  bool online_batch_processing = false;
   InstanceTest test;
 
   // This setting will ensure that
@@ -163,7 +160,6 @@ TEST(Instance, MultipleStreamsAndModels) {
   auto batch = test.GenerateBatch(6, 6, 0, 1, 1);
   artm::AddBatchArgs add_args;
   add_args.mutable_batch()->CopyFrom(*batch);
-  test.instance()->local_data_loader()->AddBatch(add_args);
 
   ::artm::MasterComponentConfig config;
   artm::Stream* s1 = config.add_stream();
@@ -207,7 +203,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   test.instance()->CreateOrReconfigureModel(m2);
 
   for (int iter = 0; iter < 100; ++iter) {
-    test.instance()->local_data_loader()->InvokeIteration(artm::InvokeIterationArgs());
+    test.instance()->local_data_loader()->AddBatch(add_args);
     test.instance()->local_data_loader()->WaitIdle(artm::WaitIdleArgs());
     test.instance()->merger()->ForceSynchronizeModel(::artm::SynchronizeModelArgs());
   }

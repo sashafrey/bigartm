@@ -57,7 +57,6 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   score_config.set_type(::artm::ScoreConfig_Type_Perplexity);
   score_config.set_name("PerplexityScore");
   master_config.add_score_config()->CopyFrom(score_config);
-  master_config.set_online_batch_processing(online_processing);
   master_config.set_disk_cache_path(".");
 
   // Create master component
@@ -146,15 +145,13 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   // Index doc-token matrix
   artm::AddBatchArgs add_batch_args;
   add_batch_args.mutable_batch()->CopyFrom(batch);
-  if (!online_processing && !is_network_mode) master_component->AddBatch(add_batch_args);
-  else if (is_network_mode) artm::SaveBatch(batch, "00b6d631-46a6-4edf-8ef6-016c7b27d9f0.batch");
+  if (is_network_mode) artm::SaveBatch(batch, "00b6d631-46a6-4edf-8ef6-016c7b27d9f0.batch");
 
   std::shared_ptr<artm::TopicModel> topic_model;
   double expected_normalizer = 0;
   double previous_perplexity = 0;
   for (int iter = 0; iter < 5; ++iter) {
-    if (!online_processing) master_component->InvokeIteration(1);
-    else                    master_component->AddBatch(add_batch_args);
+    master_component->AddBatch(add_batch_args);
 
     master_component->WaitIdle();
     model.Synchronize(0.0);
@@ -211,8 +208,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     }
   }
 
-  if (!online_processing) master_component->InvokeIteration(1);
-  else                    master_component->AddBatch(add_batch_args);
+  master_component->AddBatch(add_batch_args);
 
   EXPECT_TRUE(master_component->WaitIdle());
 
@@ -469,7 +465,7 @@ TEST(CppInterface, WaitIdleTimeout) {
   ::artm::Batch batch;
   ::artm::AddBatchArgs args;
   args.mutable_batch()->CopyFrom(batch);
-  master.AddBatch(args);
-  master.InvokeIteration(10000);
+  for (int i = 0; i < 10000; ++i)
+    master.AddBatch(args);
   EXPECT_FALSE(master.WaitIdle(1));
 }

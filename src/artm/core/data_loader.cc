@@ -82,10 +82,12 @@ LocalDataLoader::LocalDataLoader(Instance* instance)
     generation_.reset(new DiskGeneration(disk_path));
   }
 
-  // Keep this at the last action in constructor.
-  // http://stackoverflow.com/questions/15751618/initialize-boost-thread-in-object-constructor
-  boost::thread t(&LocalDataLoader::ThreadFunction, this);
-  thread_.swap(t);
+  if (!instance_->schema()->config().online_batch_processing()) {
+    // Keep this at the last action in constructor.
+    // http://stackoverflow.com/questions/15751618/initialize-boost-thread-in-object-constructor
+    boost::thread t(&LocalDataLoader::ThreadFunction, this);
+    thread_.swap(t);
+  }
 }
 
 LocalDataLoader::~LocalDataLoader() {
@@ -117,27 +119,24 @@ bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
     BatchHelpers::PopulateClassId(modified_batch.get());
   }
 
-  if (instance()->schema()->config().online_batch_processing()) {
-    auto time_start = boost::posix_time::microsec_clock::local_time();
-    for (;;) {
-      if (instance_->processor_queue()->size() < config.processor_queue_max_size()) break;
+  auto time_start = boost::posix_time::microsec_clock::local_time();
+  for (;;) {
+    if (instance_->processor_queue()->size() < config.processor_queue_max_size()) break;
 
-      boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
+    boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
 
-      if (timeout >= 0) {
-        auto time_end = boost::posix_time::microsec_clock::local_time();
-        if ((time_end - time_start).total_milliseconds() >= timeout) return false;
-      }
+    if (timeout >= 0) {
+      auto time_end = boost::posix_time::microsec_clock::local_time();
+      if ((time_end - time_start).total_milliseconds() >= timeout) return false;
     }
-    auto pi = std::make_shared<ProcessorInput>();
-    pi->mutable_batch()->CopyFrom(*modified_batch);
-    boost::uuids::uuid uuid = boost::uuids::random_generator()();
-    pi->set_batch_uuid(boost::lexical_cast<std::string>(uuid));
-    instance_->batch_manager()->AddAndNext(BatchManagerTask(uuid, std::string()));
-    instance_->processor_queue()->push(pi);
-  } else {
-    generation_->AddBatch(modified_batch);
   }
+  auto pi = std::make_shared<ProcessorInput>();
+  pi->mutable_batch()->CopyFrom(*modified_batch);
+  boost::uuids::uuid uuid = boost::uuids::random_generator()();
+  pi->set_batch_uuid(boost::lexical_cast<std::string>(uuid));
+  instance_->batch_manager()->AddAndNext(BatchManagerTask(uuid, std::string()));
+  instance_->processor_queue()->push(pi);
+
   return true;
 }
 
@@ -277,10 +276,6 @@ void LocalDataLoader::ThreadFunction() {
         continue;
       }
 
-      if (instance()->schema()->config().online_batch_processing()) {
-        generation_->RemoveBatch(next_task.uuid);
-      }
-
       auto pi = std::make_shared<ProcessorInput>();
       pi->mutable_batch()->CopyFrom(*batch);
       pi->set_batch_uuid(boost::lexical_cast<std::string>(next_task.uuid));
@@ -362,11 +357,6 @@ void RemoteDataLoader::ThreadFunction() {
       if (is_stopping) {
         LOG(INFO) << "DataLoader thread stopped";
         break;
-      }
-
-      if (instance()->schema()->config().online_batch_processing()) {
-        boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
-        continue;
       }
 
       MasterComponentConfig config = instance()->schema()->config();

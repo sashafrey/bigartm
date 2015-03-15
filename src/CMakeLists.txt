@@ -29,6 +29,7 @@ endif()
 
 # can it be avoided?
 include_directories(${3RD_PARTY_DIR}/rpcz/include)
+include_directories(${3RD_PARTY_DIR}/utf8/src)
 include_directories(${CMAKE_BINARY_DIR}/3rdparty/rpcz/src)
 include_directories(${GFLAGS_INCLUDE_DIRS})
 

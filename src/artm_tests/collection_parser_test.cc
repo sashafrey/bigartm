@@ -4,6 +4,8 @@
 
 #include "gtest/gtest.h"
 
+#include "utf8.h"  // NOLINT
+
 #include "artm/messages.pb.h"
 #include "artm/cpp_interface.h"
 
@@ -145,4 +147,21 @@ TEST(CollectionParser, Multiclass) {
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=CollectionParser.UTF8
+TEST(CollectionParser, UTF8) {
+  std::string filename = "../../../test_data/vocab.parser_test_UTF8.txt";
+  std::ifstream fs8(filename);
+  ASSERT_TRUE(fs8.is_open());
+
+  unsigned line_count = 1;
+  std::string line;
+  // Play with all the lines in the file
+  while (getline(fs8, line)) {
+    // check for invalid utf-8 (for a simple yes/no check, there is also utf8::is_valid function)
+    std::string::iterator end_it = utf8::find_invalid(line.begin(), line.end());
+    ASSERT_TRUE(end_it == line.end());
+  }
 }

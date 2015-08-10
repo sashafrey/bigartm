@@ -10,4 +10,9 @@ setup(
         'pandas',
         'numpy',
     ],
+    entry_points={
+        'console_scripts': [
+            'bigartm = artm.cli:main',
+        ]
+    }
 )

@@ -1,0 +1,3 @@
+[submodule "3rdparty/glog"]
+	path = 3rdparty/glog
+	url = git://github.com/google/glog.git

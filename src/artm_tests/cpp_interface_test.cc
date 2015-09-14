@@ -48,6 +48,15 @@ void BasicTest() {
   std::shared_ptr<artm::Regularizer> decorrelator_reg(
     new artm::Regularizer(*(master_component.get()), reg_decor_config));
 
+  std::string reg_coh_name = "coh";
+  artm::ImproveCoherencePhiConfig coh_config;
+  artm::RegularizerConfig reg_coh_config;
+  reg_coh_config.set_name(reg_coh_name);
+  reg_coh_config.set_type(artm::RegularizerConfig_Type_ImproveCoherencePhi);
+  reg_coh_config.set_config(coh_config.SerializeAsString());
+  std::shared_ptr<artm::Regularizer> coh_reg(
+    new artm::Regularizer(*(master_component.get()), reg_coh_config));
+
   std::string reg_multilang_name = "multilanguage";
   artm::MultiLanguagePhiConfig multilang_config;
   artm::RegularizerConfig reg_multilang_config;
@@ -57,7 +66,7 @@ void BasicTest() {
   std::shared_ptr<artm::Regularizer> multilanguage_reg(
     new artm::Regularizer(*(master_component.get()), reg_multilang_config));
 
-  EXPECT_EQ(master_component->info()->regularizer_size(), 2);
+  EXPECT_EQ(master_component->info()->regularizer_size(), 3);
 
   // Create model
   artm::ModelConfig model_config;
@@ -69,6 +78,8 @@ void BasicTest() {
   model_config.add_topic_name("5th topic");
   EXPECT_EQ(model_config.topic_name_size(), nTopics);
   model_config.add_regularizer_name(reg_decor_name);
+  model_config.add_regularizer_tau(1);
+  model_config.add_regularizer_name(reg_coh_name);
   model_config.add_regularizer_tau(1);
   model_config.add_regularizer_name(reg_multilang_name);
   model_config.add_regularizer_tau(1);

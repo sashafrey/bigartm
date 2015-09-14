@@ -19,7 +19,10 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                         ::artm::core::PhiMatrix* result) {
   const int topic_size = n_wt.topic_size();
   const int token_size = n_wt.token_size();
-
+  LOG(WARNING) << "--- " << topic_size << " " << token_size;
+  auto k = n_wt.token(0);
+  auto t = n_wt.topic_name();
+  LOG(WARNING) << "NWT " << n_wt.token(0).keyword << n_wt.token(0).class_id;
   std::vector<bool> topics_to_regularize;
   if (config_.topic_name().size() == 0)
     topics_to_regularize.assign(topic_size, true);
@@ -43,14 +46,24 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   // proceed the regularization
+  LOG(WARNING) << "ONE";
   for (int token_id = 0; token_id < token_size; ++token_id) {
+    for (int i = 0; i < n_wt.token_size(); ++i) {
+      LOG(WARNING) << "PWT " << p_wt.token(i).keyword << p_wt.token(i).class_id;
+      LOG(WARNING) << "NWT " << n_wt.token(i).keyword << n_wt.token(i).class_id;
+    }
+    LOG(WARNING) << "TOKEN_ID " << token_id;
     auto token = n_wt.token(token_id);
+    LOG(WARNING) << "TOKEN " << token.keyword;
+    LOG(WARNING) << n_wt.token_size();
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
 
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+      LOG(WARNING) << "    TOPIC_ID " << topic_id;
       float value = 0.0f;
       auto& cooc_tokens_info = dictionary_ptr->cooc_info(token);
       for (int cooc_token_id = 0; cooc_token_id < dictionary_ptr->cooc_size(token); ++cooc_token_id) {
+        LOG(WARNING) << "        COOC_TOKEN_ID " << cooc_token_id;
         if (cooc_tokens_info[cooc_token_id].token->class_id != token.class_id) continue;
 
         value += n_wt.get(n_wt.token_index(*cooc_tokens_info[cooc_token_id].token), topic_id) *
@@ -59,6 +72,7 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       result->set(token_id, topic_id, value);
     }
   }
+  LOG(WARNING) << "TWO";
   return true;
 }
 

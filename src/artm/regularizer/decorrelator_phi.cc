@@ -19,6 +19,8 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   // read the parameters from config and control their correctness
   const int topic_size = p_wt.topic_size();
   const int token_size = p_wt.token_size();
+  auto k = n_wt.token(0);
+  auto t = n_wt.topic_name();
 
   std::vector<bool> topics_to_regularize;
   if (config_.topic_name().size() == 0)

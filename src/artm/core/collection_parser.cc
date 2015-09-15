@@ -294,8 +294,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
   }
 
   if (config_.has_dictionary_file_name()) {
-    ::artm::core::BatchHelpers::SaveMessage(config_.dictionary_file_name(),
-                                            config_.target_folder(), *retval);
+    ::artm::core::BatchHelpers::SaveMessage(config_.dictionary_file_name(), *retval);
   }
 
   LOG_IF(WARNING, token_weight_zero > 0) << "Found " << token_weight_zero << " tokens with zero "

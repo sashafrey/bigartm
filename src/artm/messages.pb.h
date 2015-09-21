@@ -4153,7 +4153,7 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_dictionary_name();
   inline void set_allocated_dictionary_name(::std::string* dictionary_name);
 
-  // optional float theta_sparsity_eps = 5 [default = 1e-37];
+  // optional float theta_sparsity_eps = 5 [default = 1e-037];
   inline bool has_theta_sparsity_eps() const;
   inline void clear_theta_sparsity_eps();
   static const int kThetaSparsityEpsFieldNumber = 5;
@@ -4449,7 +4449,7 @@ class SparsityThetaScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_stream_name();
   inline void set_allocated_stream_name(::std::string* stream_name);
 
-  // optional float eps = 3 [default = 1e-37];
+  // optional float eps = 3 [default = 1e-037];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 3;
@@ -4658,7 +4658,7 @@ class SparsityPhiScoreConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional float eps = 1 [default = 1e-37];
+  // optional float eps = 1 [default = 1e-037];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 1;
@@ -5581,7 +5581,7 @@ class TopicKernelScoreConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional float eps = 1 [default = 1e-37];
+  // optional float eps = 1 [default = 1e-037];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 1;
@@ -5906,7 +5906,7 @@ class TopicMassPhiScoreConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional float eps = 1 [default = 1e-37];
+  // optional float eps = 1 [default = 1e-037];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 1;
@@ -7448,7 +7448,7 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   inline bool use_sparse_format() const;
   inline void set_use_sparse_format(bool value);
 
-  // optional float eps = 6 [default = 1e-37];
+  // optional float eps = 6 [default = 1e-037];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 6;
@@ -7646,7 +7646,7 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline bool use_sparse_format() const;
   inline void set_use_sparse_format(bool value);
 
-  // optional float eps = 7 [default = 1e-37];
+  // optional float eps = 7 [default = 1e-037];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 7;
@@ -15022,7 +15022,7 @@ inline void PerplexityScoreConfig::set_allocated_dictionary_name(::std::string* 
   }
 }
 
-// optional float theta_sparsity_eps = 5 [default = 1e-37];
+// optional float theta_sparsity_eps = 5 [default = 1e-037];
 inline bool PerplexityScoreConfig::has_theta_sparsity_eps() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -15033,7 +15033,7 @@ inline void PerplexityScoreConfig::clear_has_theta_sparsity_eps() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void PerplexityScoreConfig::clear_theta_sparsity_eps() {
-  theta_sparsity_eps_ = 1e-37f;
+  theta_sparsity_eps_ = 1e-037f;
   clear_has_theta_sparsity_eps();
 }
 inline float PerplexityScoreConfig::theta_sparsity_eps() const {
@@ -15434,7 +15434,7 @@ inline void SparsityThetaScoreConfig::set_allocated_stream_name(::std::string* s
   }
 }
 
-// optional float eps = 3 [default = 1e-37];
+// optional float eps = 3 [default = 1e-037];
 inline bool SparsityThetaScoreConfig::has_eps() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -15445,7 +15445,7 @@ inline void SparsityThetaScoreConfig::clear_has_eps() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void SparsityThetaScoreConfig::clear_eps() {
-  eps_ = 1e-37f;
+  eps_ = 1e-037f;
   clear_has_eps();
 }
 inline float SparsityThetaScoreConfig::eps() const {
@@ -15574,7 +15574,7 @@ inline void SparsityThetaScore::set_total_topics(::google::protobuf::int32 value
 
 // SparsityPhiScoreConfig
 
-// optional float eps = 1 [default = 1e-37];
+// optional float eps = 1 [default = 1e-037];
 inline bool SparsityPhiScoreConfig::has_eps() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -15585,7 +15585,7 @@ inline void SparsityPhiScoreConfig::clear_has_eps() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void SparsityPhiScoreConfig::clear_eps() {
-  eps_ = 1e-37f;
+  eps_ = 1e-037f;
   clear_has_eps();
 }
 inline float SparsityPhiScoreConfig::eps() const {
@@ -16633,7 +16633,7 @@ ThetaSnippetScore::mutable_values() {
 
 // TopicKernelScoreConfig
 
-// optional float eps = 1 [default = 1e-37];
+// optional float eps = 1 [default = 1e-037];
 inline bool TopicKernelScoreConfig::has_eps() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -16644,7 +16644,7 @@ inline void TopicKernelScoreConfig::clear_has_eps() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void TopicKernelScoreConfig::clear_eps() {
-  eps_ = 1e-37f;
+  eps_ = 1e-037f;
   clear_has_eps();
 }
 inline float TopicKernelScoreConfig::eps() const {
@@ -17172,7 +17172,7 @@ inline void TopicKernelScore::set_allocated_topic_name(::artm::StringArray* topi
 
 // TopicMassPhiScoreConfig
 
-// optional float eps = 1 [default = 1e-37];
+// optional float eps = 1 [default = 1e-037];
 inline bool TopicMassPhiScoreConfig::has_eps() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -17183,7 +17183,7 @@ inline void TopicMassPhiScoreConfig::clear_has_eps() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void TopicMassPhiScoreConfig::clear_eps() {
-  eps_ = 1e-37f;
+  eps_ = 1e-037f;
   clear_has_eps();
 }
 inline float TopicMassPhiScoreConfig::eps() const {
@@ -19476,7 +19476,7 @@ inline void GetTopicModelArgs::set_use_sparse_format(bool value) {
   use_sparse_format_ = value;
 }
 
-// optional float eps = 6 [default = 1e-37];
+// optional float eps = 6 [default = 1e-037];
 inline bool GetTopicModelArgs::has_eps() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -19487,7 +19487,7 @@ inline void GetTopicModelArgs::clear_has_eps() {
   _has_bits_[0] &= ~0x00000020u;
 }
 inline void GetTopicModelArgs::clear_eps() {
-  eps_ = 1e-37f;
+  eps_ = 1e-037f;
   clear_has_eps();
 }
 inline float GetTopicModelArgs::eps() const {
@@ -19769,7 +19769,7 @@ inline void GetThetaMatrixArgs::set_use_sparse_format(bool value) {
   use_sparse_format_ = value;
 }
 
-// optional float eps = 7 [default = 1e-37];
+// optional float eps = 7 [default = 1e-037];
 inline bool GetThetaMatrixArgs::has_eps() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -19780,7 +19780,7 @@ inline void GetThetaMatrixArgs::clear_has_eps() {
   _has_bits_[0] &= ~0x00000040u;
 }
 inline void GetThetaMatrixArgs::clear_eps() {
-  eps_ = 1e-37f;
+  eps_ = 1e-037f;
   clear_has_eps();
 }
 inline float GetThetaMatrixArgs::eps() const {

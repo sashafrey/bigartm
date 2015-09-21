@@ -111,7 +111,8 @@ class MasterComponent(object):
     def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None,
-                        find_theta=False, reset_scores=False, reuse_theta=False):
+                        find_theta=False, reset_scores=False, reuse_theta=False,
+                        use_ptdw_matrix=False, ptdw_reg_mode=0, ptdw_reg_tau=None):
         """Args:
            - pwt(str): name of pwt matrix in BigARTM
            - nwt(str): name of nwt matrix in BigARTM
@@ -125,10 +126,14 @@ class MasterComponent(object):
            - find_theat(bool): find theta matrix for 'batches' (if alternative 2)
            - reset_scores(bool): reset scores after iterations or not
            - reuse_theta(bool): initialize by theta from previous collection pass
+           - use_ptdw_matrix(bool): infer ptdw matrix during document passes
+           - ptdw_reg_mode(int): ptdw regularization mode (0 means no regularization)
+           - ptdw_reg_tau(list of double): double coefficients needed for particular mode
            Returns:
            - tuple (messages.ThetaMatrix, numpy.ndarray) --- the info about Theta (find_theta==True)
            - messages.ThetaMatrix --- the info about Theta (find_theta==False)
         """
+        print "I am in python process batces"
         args = messages.ProcessBatchesArgs()
         args.pwt_source_name = pwt
         args.nwt_target_name = nwt
@@ -156,6 +161,12 @@ class MasterComponent(object):
             for class_id, weight in zip(class_ids, class_weights):
                 args.class_id.append(class_id)
                 args.class_weight.append(weight)
+
+        args.use_ptdw_matrix = use_ptdw_matrix
+        args.ptdw_reg_mode = ptdw_reg_mode
+        if ptdw_reg_tau is not None:
+            for tau in ptdw_reg_tau:
+                args.ptdw_reg_tau.append(tau)
 
         func = None
         if find_theta:

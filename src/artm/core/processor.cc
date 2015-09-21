@@ -474,6 +474,8 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
                             const InstanceSchema& schema, const CsrMatrix<float>& sparse_ndw,
                             const ::artm::core::PhiMatrix& p_wt, DenseMatrix<float>* theta_matrix,
                             NwtWriteAdapter* nwt_writer, util::Blas* blas) {
+
+  LOG(WARNING) << "I am alive";
   DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
   const int topics_count = model_config.topics_count();
   const int docs_count = theta_matrix->no_columns();
@@ -527,9 +529,19 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
       }
 
       // ToDo: Apply ptdw regularizer here (if needed)
-      // For now ust put the code here.
+      // For now just put the code here.
       // Later we may do via regularizer's framework like this:
       // ptdw_agents->Apply(d, inner_iter, topics_count, local_ptdw)
+
+      int mode = model_config.ptdw_reg_mode();
+
+      // smoothing by adding the neighbours
+       if (mode == 1) {
+         double tau = model_config.ptdw_reg_tau(0);
+         int neighbours_count = model_config.ptdw_reg_tau(1);
+         LOG(WARNING) << "We managed to use mode 1, with tau " << tau;
+       }
+
 
       if (!last_iteration) {  // update theta matrix (except for the last iteration)
         for (int k = 0; k < topics_count; ++k)

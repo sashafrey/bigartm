@@ -2067,6 +2067,25 @@ class ModelConfig : public ::google::protobuf::Message {
   inline bool use_ptdw_matrix() const;
   inline void set_use_ptdw_matrix(bool value);
 
+  // optional int32 ptdw_reg_mode = 20 [default = 0];
+  inline bool has_ptdw_reg_mode() const;
+  inline void clear_ptdw_reg_mode();
+  static const int kPtdwRegModeFieldNumber = 20;
+  inline ::google::protobuf::int32 ptdw_reg_mode() const;
+  inline void set_ptdw_reg_mode(::google::protobuf::int32 value);
+
+  // repeated double ptdw_reg_tau = 21;
+  inline int ptdw_reg_tau_size() const;
+  inline void clear_ptdw_reg_tau();
+  static const int kPtdwRegTauFieldNumber = 21;
+  inline double ptdw_reg_tau(int index) const;
+  inline void set_ptdw_reg_tau(int index, double value);
+  inline void add_ptdw_reg_tau(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      ptdw_reg_tau() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_ptdw_reg_tau();
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2093,6 +2112,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_opt_for_avx();
   inline void set_has_use_ptdw_matrix();
   inline void clear_has_use_ptdw_matrix();
+  inline void set_has_ptdw_reg_mode();
+  inline void clear_has_ptdw_reg_mode();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2118,9 +2139,11 @@ class ModelConfig : public ::google::protobuf::Message {
   bool opt_for_avx_;
   bool use_ptdw_matrix_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
+  ::google::protobuf::RepeatedField< double > ptdw_reg_tau_;
+  ::google::protobuf::int32 ptdw_reg_mode_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(21 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -4130,7 +4153,7 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_dictionary_name();
   inline void set_allocated_dictionary_name(::std::string* dictionary_name);
 
-  // optional float theta_sparsity_eps = 5 [default = 1e-037];
+  // optional float theta_sparsity_eps = 5 [default = 1e-37];
   inline bool has_theta_sparsity_eps() const;
   inline void clear_theta_sparsity_eps();
   static const int kThetaSparsityEpsFieldNumber = 5;
@@ -4426,7 +4449,7 @@ class SparsityThetaScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_stream_name();
   inline void set_allocated_stream_name(::std::string* stream_name);
 
-  // optional float eps = 3 [default = 1e-037];
+  // optional float eps = 3 [default = 1e-37];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 3;
@@ -4635,7 +4658,7 @@ class SparsityPhiScoreConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional float eps = 1 [default = 1e-037];
+  // optional float eps = 1 [default = 1e-37];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 1;
@@ -5558,7 +5581,7 @@ class TopicKernelScoreConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional float eps = 1 [default = 1e-037];
+  // optional float eps = 1 [default = 1e-37];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 1;
@@ -5883,7 +5906,7 @@ class TopicMassPhiScoreConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional float eps = 1 [default = 1e-037];
+  // optional float eps = 1 [default = 1e-37];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 1;
@@ -7425,7 +7448,7 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   inline bool use_sparse_format() const;
   inline void set_use_sparse_format(bool value);
 
-  // optional float eps = 6 [default = 1e-037];
+  // optional float eps = 6 [default = 1e-37];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 6;
@@ -7623,7 +7646,7 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline bool use_sparse_format() const;
   inline void set_use_sparse_format(bool value);
 
-  // optional float eps = 7 [default = 1e-037];
+  // optional float eps = 7 [default = 1e-37];
   inline bool has_eps() const;
   inline void clear_eps();
   static const int kEpsFieldNumber = 7;
@@ -8637,6 +8660,25 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline bool use_ptdw_matrix() const;
   inline void set_use_ptdw_matrix(bool value);
 
+  // optional int32 ptdw_reg_mode = 17 [default = 0];
+  inline bool has_ptdw_reg_mode() const;
+  inline void clear_ptdw_reg_mode();
+  static const int kPtdwRegModeFieldNumber = 17;
+  inline ::google::protobuf::int32 ptdw_reg_mode() const;
+  inline void set_ptdw_reg_mode(::google::protobuf::int32 value);
+
+  // repeated double ptdw_reg_tau = 18;
+  inline int ptdw_reg_tau_size() const;
+  inline void clear_ptdw_reg_tau();
+  static const int kPtdwRegTauFieldNumber = 18;
+  inline double ptdw_reg_tau(int index) const;
+  inline void set_ptdw_reg_tau(int index, double value);
+  inline void add_ptdw_reg_tau(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      ptdw_reg_tau() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_ptdw_reg_tau();
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8659,6 +8701,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_theta_matrix_type();
   inline void set_has_use_ptdw_matrix();
   inline void clear_has_use_ptdw_matrix();
+  inline void set_has_ptdw_reg_mode();
+  inline void clear_has_ptdw_reg_mode();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8679,9 +8723,11 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< float > batch_weight_;
   int theta_matrix_type_;
   bool use_ptdw_matrix_;
+  ::google::protobuf::RepeatedField< double > ptdw_reg_tau_;
+  ::google::protobuf::int32 ptdw_reg_mode_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12540,6 +12586,53 @@ inline void ModelConfig::set_use_ptdw_matrix(bool value) {
   use_ptdw_matrix_ = value;
 }
 
+// optional int32 ptdw_reg_mode = 20 [default = 0];
+inline bool ModelConfig::has_ptdw_reg_mode() const {
+  return (_has_bits_[0] & 0x00080000u) != 0;
+}
+inline void ModelConfig::set_has_ptdw_reg_mode() {
+  _has_bits_[0] |= 0x00080000u;
+}
+inline void ModelConfig::clear_has_ptdw_reg_mode() {
+  _has_bits_[0] &= ~0x00080000u;
+}
+inline void ModelConfig::clear_ptdw_reg_mode() {
+  ptdw_reg_mode_ = 0;
+  clear_has_ptdw_reg_mode();
+}
+inline ::google::protobuf::int32 ModelConfig::ptdw_reg_mode() const {
+  return ptdw_reg_mode_;
+}
+inline void ModelConfig::set_ptdw_reg_mode(::google::protobuf::int32 value) {
+  set_has_ptdw_reg_mode();
+  ptdw_reg_mode_ = value;
+}
+
+// repeated double ptdw_reg_tau = 21;
+inline int ModelConfig::ptdw_reg_tau_size() const {
+  return ptdw_reg_tau_.size();
+}
+inline void ModelConfig::clear_ptdw_reg_tau() {
+  ptdw_reg_tau_.Clear();
+}
+inline double ModelConfig::ptdw_reg_tau(int index) const {
+  return ptdw_reg_tau_.Get(index);
+}
+inline void ModelConfig::set_ptdw_reg_tau(int index, double value) {
+  ptdw_reg_tau_.Set(index, value);
+}
+inline void ModelConfig::add_ptdw_reg_tau(double value) {
+  ptdw_reg_tau_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+ModelConfig::ptdw_reg_tau() const {
+  return ptdw_reg_tau_;
+}
+inline ::google::protobuf::RepeatedField< double >*
+ModelConfig::mutable_ptdw_reg_tau() {
+  return &ptdw_reg_tau_;
+}
+
 // -------------------------------------------------------------------
 
 // RegularizerConfig
@@ -14929,7 +15022,7 @@ inline void PerplexityScoreConfig::set_allocated_dictionary_name(::std::string* 
   }
 }
 
-// optional float theta_sparsity_eps = 5 [default = 1e-037];
+// optional float theta_sparsity_eps = 5 [default = 1e-37];
 inline bool PerplexityScoreConfig::has_theta_sparsity_eps() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -14940,7 +15033,7 @@ inline void PerplexityScoreConfig::clear_has_theta_sparsity_eps() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void PerplexityScoreConfig::clear_theta_sparsity_eps() {
-  theta_sparsity_eps_ = 1e-037f;
+  theta_sparsity_eps_ = 1e-37f;
   clear_has_theta_sparsity_eps();
 }
 inline float PerplexityScoreConfig::theta_sparsity_eps() const {
@@ -15341,7 +15434,7 @@ inline void SparsityThetaScoreConfig::set_allocated_stream_name(::std::string* s
   }
 }
 
-// optional float eps = 3 [default = 1e-037];
+// optional float eps = 3 [default = 1e-37];
 inline bool SparsityThetaScoreConfig::has_eps() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -15352,7 +15445,7 @@ inline void SparsityThetaScoreConfig::clear_has_eps() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void SparsityThetaScoreConfig::clear_eps() {
-  eps_ = 1e-037f;
+  eps_ = 1e-37f;
   clear_has_eps();
 }
 inline float SparsityThetaScoreConfig::eps() const {
@@ -15481,7 +15574,7 @@ inline void SparsityThetaScore::set_total_topics(::google::protobuf::int32 value
 
 // SparsityPhiScoreConfig
 
-// optional float eps = 1 [default = 1e-037];
+// optional float eps = 1 [default = 1e-37];
 inline bool SparsityPhiScoreConfig::has_eps() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -15492,7 +15585,7 @@ inline void SparsityPhiScoreConfig::clear_has_eps() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void SparsityPhiScoreConfig::clear_eps() {
-  eps_ = 1e-037f;
+  eps_ = 1e-37f;
   clear_has_eps();
 }
 inline float SparsityPhiScoreConfig::eps() const {
@@ -16540,7 +16633,7 @@ ThetaSnippetScore::mutable_values() {
 
 // TopicKernelScoreConfig
 
-// optional float eps = 1 [default = 1e-037];
+// optional float eps = 1 [default = 1e-37];
 inline bool TopicKernelScoreConfig::has_eps() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -16551,7 +16644,7 @@ inline void TopicKernelScoreConfig::clear_has_eps() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void TopicKernelScoreConfig::clear_eps() {
-  eps_ = 1e-037f;
+  eps_ = 1e-37f;
   clear_has_eps();
 }
 inline float TopicKernelScoreConfig::eps() const {
@@ -17079,7 +17172,7 @@ inline void TopicKernelScore::set_allocated_topic_name(::artm::StringArray* topi
 
 // TopicMassPhiScoreConfig
 
-// optional float eps = 1 [default = 1e-037];
+// optional float eps = 1 [default = 1e-37];
 inline bool TopicMassPhiScoreConfig::has_eps() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -17090,7 +17183,7 @@ inline void TopicMassPhiScoreConfig::clear_has_eps() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void TopicMassPhiScoreConfig::clear_eps() {
-  eps_ = 1e-037f;
+  eps_ = 1e-37f;
   clear_has_eps();
 }
 inline float TopicMassPhiScoreConfig::eps() const {
@@ -19383,7 +19476,7 @@ inline void GetTopicModelArgs::set_use_sparse_format(bool value) {
   use_sparse_format_ = value;
 }
 
-// optional float eps = 6 [default = 1e-037];
+// optional float eps = 6 [default = 1e-37];
 inline bool GetTopicModelArgs::has_eps() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -19394,7 +19487,7 @@ inline void GetTopicModelArgs::clear_has_eps() {
   _has_bits_[0] &= ~0x00000020u;
 }
 inline void GetTopicModelArgs::clear_eps() {
-  eps_ = 1e-037f;
+  eps_ = 1e-37f;
   clear_has_eps();
 }
 inline float GetTopicModelArgs::eps() const {
@@ -19676,7 +19769,7 @@ inline void GetThetaMatrixArgs::set_use_sparse_format(bool value) {
   use_sparse_format_ = value;
 }
 
-// optional float eps = 7 [default = 1e-037];
+// optional float eps = 7 [default = 1e-37];
 inline bool GetThetaMatrixArgs::has_eps() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -19687,7 +19780,7 @@ inline void GetThetaMatrixArgs::clear_has_eps() {
   _has_bits_[0] &= ~0x00000040u;
 }
 inline void GetThetaMatrixArgs::clear_eps() {
-  eps_ = 1e-037f;
+  eps_ = 1e-37f;
   clear_has_eps();
 }
 inline float GetThetaMatrixArgs::eps() const {
@@ -21139,6 +21232,53 @@ inline bool ProcessBatchesArgs::use_ptdw_matrix() const {
 inline void ProcessBatchesArgs::set_use_ptdw_matrix(bool value) {
   set_has_use_ptdw_matrix();
   use_ptdw_matrix_ = value;
+}
+
+// optional int32 ptdw_reg_mode = 17 [default = 0];
+inline bool ProcessBatchesArgs::has_ptdw_reg_mode() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_ptdw_reg_mode() {
+  _has_bits_[0] |= 0x00010000u;
+}
+inline void ProcessBatchesArgs::clear_has_ptdw_reg_mode() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+inline void ProcessBatchesArgs::clear_ptdw_reg_mode() {
+  ptdw_reg_mode_ = 0;
+  clear_has_ptdw_reg_mode();
+}
+inline ::google::protobuf::int32 ProcessBatchesArgs::ptdw_reg_mode() const {
+  return ptdw_reg_mode_;
+}
+inline void ProcessBatchesArgs::set_ptdw_reg_mode(::google::protobuf::int32 value) {
+  set_has_ptdw_reg_mode();
+  ptdw_reg_mode_ = value;
+}
+
+// repeated double ptdw_reg_tau = 18;
+inline int ProcessBatchesArgs::ptdw_reg_tau_size() const {
+  return ptdw_reg_tau_.size();
+}
+inline void ProcessBatchesArgs::clear_ptdw_reg_tau() {
+  ptdw_reg_tau_.Clear();
+}
+inline double ProcessBatchesArgs::ptdw_reg_tau(int index) const {
+  return ptdw_reg_tau_.Get(index);
+}
+inline void ProcessBatchesArgs::set_ptdw_reg_tau(int index, double value) {
+  ptdw_reg_tau_.Set(index, value);
+}
+inline void ProcessBatchesArgs::add_ptdw_reg_tau(double value) {
+  ptdw_reg_tau_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+ProcessBatchesArgs::ptdw_reg_tau() const {
+  return ptdw_reg_tau_;
+}
+inline ::google::protobuf::RepeatedField< double >*
+ProcessBatchesArgs::mutable_ptdw_reg_tau() {
+  return &ptdw_reg_tau_;
 }
 
 // -------------------------------------------------------------------

@@ -245,7 +245,8 @@ class ARTM(object):
             raise IOError('dictionary_name is None')
 
     def fit_offline(self, batch_vectorizer=None, num_collection_passes=20,
-                    num_document_passes=1, reuse_theta=True):
+                    num_document_passes=1, reuse_theta=True,
+                    use_ptdw_matrix=False, ptdw_reg_mode=0, ptdw_reg_tau=None):
         """ARTM.fit_offline() --- proceed the learning of
         topic model in off-line mode
 
@@ -257,12 +258,17 @@ class ARTM(object):
           for inferring theta, default=1
           reuse_theta (bool): using theta from previous pass of the collection,
           defaul=True
+          use_ptdw_matrix(bool): infer ptdw matrix during document passes, default=False
+          ptdw_reg_mode(int): ptdw regularization mode, default=0(no regularization)
+          ptdw_reg_tau(list of double): double coefficients needed for particular mode
 
         Note:
           ARTM.initialize() should be proceed before first call
           ARTM.fit_offline(), or it will be initialized by dictionary
           during first call.
         """
+
+        print "I am in fit_offline"
         if batch_vectorizer is None:
             raise IOError('No batches were given for processing')
 
@@ -301,7 +307,10 @@ class ARTM(object):
                                         class_ids=class_ids,
                                         class_weights=class_weights,
                                         reset_scores=True,
-                                        reuse_theta=reuse_theta)
+                                        reuse_theta=reuse_theta,
+                                        use_ptdw_matrix=use_ptdw_matrix,
+                                        ptdw_reg_mode=ptdw_reg_mode,
+                                        ptdw_reg_tau=ptdw_reg_tau)
             self._synchronizations_processed += 1
             self.master.regularize_model(pwt=self.model_pwt,
                                          nwt=self.model_nwt,

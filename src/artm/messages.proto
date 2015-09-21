@@ -117,6 +117,8 @@ message ModelConfig {
   optional bool opt_for_avx = 17 [default = true];
   repeated RegularizerSettings regularizer_settings = 18;
   optional bool use_ptdw_matrix = 19 [default = false];
+  optional int32 ptdw_reg_mode = 20 [default = 0];
+  repeated double ptdw_reg_tau = 21;
 }
 
 // Represents a configuration of a general regularizer
@@ -601,6 +603,8 @@ message ProcessBatchesArgs {
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
   optional bool use_ptdw_matrix = 16 [default = false];
+  optional int32 ptdw_reg_mode = 17 [default = 0];
+  repeated double ptdw_reg_tau = 18;
 }
 
 message ProcessBatchesResult {

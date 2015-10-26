@@ -111,5 +111,14 @@ void CacheManager::UpdateCacheEntry(std::shared_ptr<DataLoaderCacheEntry> cache_
     try { fs::remove(fs::path(old_entry->filename())); } catch(...) {}
 }
 
+std::shared_ptr<DataLoaderCacheEntry> CacheManager::CreateCacheEntry(const std::string& batch_id,
+                                                                     const ModelName& model_name) const {
+  auto cache_entry = std::make_shared<DataLoaderCacheEntry>();
+  cache_entry->set_batch_uuid(batch_id);
+  cache_entry->set_model_name(model_name);
+  return cache_entry;
+
+}
+
 }  // namespace core
 }  // namespace artm

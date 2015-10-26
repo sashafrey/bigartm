@@ -82,8 +82,8 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
     pi->set_notifiable(instance_->batch_manager());
     pi->set_scores_merger(instance_->merger()->scores_merger());
     if (config.cache_theta()) {
-      pi->set_cache_manager(instance_->cache_manager());
-      pi->set_reuse_theta_cache_manager(instance_->cache_manager());
+      pi->set_cache_manager(CacheManager_Type_StoreTheta, instance_->cache_manager());
+      pi->set_cache_manager(CacheManager_Type_ReuseTheta, instance_->cache_manager());
     }
     pi->set_model_name(model_name);
     pi->mutable_batch()->CopyFrom(*batch);
@@ -129,8 +129,8 @@ void DataLoader::InvokeIteration(const InvokeIterationArgs& args) {
         pi->set_notifiable(instance()->batch_manager());
         pi->set_scores_merger(instance_->merger()->scores_merger());
         if (schema->config().cache_theta()) {
-          pi->set_cache_manager(instance_->cache_manager());
-          pi->set_reuse_theta_cache_manager(instance_->cache_manager());
+          pi->set_cache_manager(CacheManager_Type_StoreTheta, instance_->cache_manager());
+          pi->set_cache_manager(CacheManager_Type_ReuseTheta, instance_->cache_manager());
         }
         pi->set_task_id(task_id);
         pi->set_batch_filename(task);

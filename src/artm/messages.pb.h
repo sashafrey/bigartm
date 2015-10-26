@@ -2086,6 +2086,18 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
       mutable_regularizer_settings();
 
+  // optional string predict_class_id = 19;
+  inline bool has_predict_class_id() const;
+  inline void clear_predict_class_id();
+  static const int kPredictClassIdFieldNumber = 19;
+  inline const ::std::string& predict_class_id() const;
+  inline void set_predict_class_id(const ::std::string& value);
+  inline void set_predict_class_id(const char* value);
+  inline void set_predict_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_predict_class_id();
+  inline ::std::string* release_predict_class_id();
+  inline void set_allocated_predict_class_id(::std::string* predict_class_id);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2110,6 +2122,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_new_tokens();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
+  inline void set_has_predict_class_id();
+  inline void clear_has_predict_class_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2134,9 +2148,10 @@ class ModelConfig : public ::google::protobuf::Message {
   bool opt_for_avx_;
   ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
+  ::std::string* predict_class_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6668,6 +6683,50 @@ class ThetaMatrix : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::IntArray >*
       mutable_topic_index();
 
+  // repeated .artm.FloatArray class_weights = 8;
+  inline int class_weights_size() const;
+  inline void clear_class_weights();
+  static const int kClassWeightsFieldNumber = 8;
+  inline const ::artm::FloatArray& class_weights(int index) const;
+  inline ::artm::FloatArray* mutable_class_weights(int index);
+  inline ::artm::FloatArray* add_class_weights();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
+      class_weights() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
+      mutable_class_weights();
+
+  // repeated string class_token = 9;
+  inline int class_token_size() const;
+  inline void clear_class_token();
+  static const int kClassTokenFieldNumber = 9;
+  inline const ::std::string& class_token(int index) const;
+  inline ::std::string* mutable_class_token(int index);
+  inline void set_class_token(int index, const ::std::string& value);
+  inline void set_class_token(int index, const char* value);
+  inline void set_class_token(int index, const char* value, size_t size);
+  inline ::std::string* add_class_token();
+  inline void add_class_token(const ::std::string& value);
+  inline void add_class_token(const char* value);
+  inline void add_class_token(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_token() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_token();
+
+  // repeated string class_id = 10;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 10;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
   // @@protoc_insertion_point(class_scope:artm.ThetaMatrix)
  private:
   inline void set_has_model_name();
@@ -6684,10 +6743,13 @@ class ThetaMatrix : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> item_title_;
   ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
+  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > class_weights_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_token_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8792,6 +8854,18 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_batch_weight();
 
+  // optional string predict_class_id = 16;
+  inline bool has_predict_class_id() const;
+  inline void clear_predict_class_id();
+  static const int kPredictClassIdFieldNumber = 16;
+  inline const ::std::string& predict_class_id() const;
+  inline void set_predict_class_id(const ::std::string& value);
+  inline void set_predict_class_id(const char* value);
+  inline void set_predict_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_predict_class_id();
+  inline ::std::string* release_predict_class_id();
+  inline void set_allocated_predict_class_id(::std::string* predict_class_id);
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8812,6 +8886,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_reset_scores();
   inline void set_has_theta_matrix_type();
   inline void clear_has_theta_matrix_type();
+  inline void set_has_predict_class_id();
+  inline void clear_has_predict_class_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8830,10 +8906,11 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool use_sparse_bow_;
   bool reset_scores_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
+  ::std::string* predict_class_id_;
   int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12980,6 +13057,76 @@ ModelConfig::regularizer_settings() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
 ModelConfig::mutable_regularizer_settings() {
   return &regularizer_settings_;
+}
+
+// optional string predict_class_id = 19;
+inline bool ModelConfig::has_predict_class_id() const {
+  return (_has_bits_[0] & 0x00040000u) != 0;
+}
+inline void ModelConfig::set_has_predict_class_id() {
+  _has_bits_[0] |= 0x00040000u;
+}
+inline void ModelConfig::clear_has_predict_class_id() {
+  _has_bits_[0] &= ~0x00040000u;
+}
+inline void ModelConfig::clear_predict_class_id() {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_->clear();
+  }
+  clear_has_predict_class_id();
+}
+inline const ::std::string& ModelConfig::predict_class_id() const {
+  return *predict_class_id_;
+}
+inline void ModelConfig::set_predict_class_id(const ::std::string& value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ModelConfig::set_predict_class_id(const char* value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ModelConfig::set_predict_class_id(const char* value, size_t size) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ModelConfig::mutable_predict_class_id() {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  return predict_class_id_;
+}
+inline ::std::string* ModelConfig::release_predict_class_id() {
+  clear_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = predict_class_id_;
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ModelConfig::set_allocated_predict_class_id(::std::string* predict_class_id) {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete predict_class_id_;
+  }
+  if (predict_class_id) {
+    set_has_predict_class_id();
+    predict_class_id_ = predict_class_id;
+  } else {
+    clear_has_predict_class_id();
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
@@ -18511,6 +18658,119 @@ ThetaMatrix::mutable_topic_index() {
   return &topic_index_;
 }
 
+// repeated .artm.FloatArray class_weights = 8;
+inline int ThetaMatrix::class_weights_size() const {
+  return class_weights_.size();
+}
+inline void ThetaMatrix::clear_class_weights() {
+  class_weights_.Clear();
+}
+inline const ::artm::FloatArray& ThetaMatrix::class_weights(int index) const {
+  return class_weights_.Get(index);
+}
+inline ::artm::FloatArray* ThetaMatrix::mutable_class_weights(int index) {
+  return class_weights_.Mutable(index);
+}
+inline ::artm::FloatArray* ThetaMatrix::add_class_weights() {
+  return class_weights_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
+ThetaMatrix::class_weights() const {
+  return class_weights_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
+ThetaMatrix::mutable_class_weights() {
+  return &class_weights_;
+}
+
+// repeated string class_token = 9;
+inline int ThetaMatrix::class_token_size() const {
+  return class_token_.size();
+}
+inline void ThetaMatrix::clear_class_token() {
+  class_token_.Clear();
+}
+inline const ::std::string& ThetaMatrix::class_token(int index) const {
+  return class_token_.Get(index);
+}
+inline ::std::string* ThetaMatrix::mutable_class_token(int index) {
+  return class_token_.Mutable(index);
+}
+inline void ThetaMatrix::set_class_token(int index, const ::std::string& value) {
+  class_token_.Mutable(index)->assign(value);
+}
+inline void ThetaMatrix::set_class_token(int index, const char* value) {
+  class_token_.Mutable(index)->assign(value);
+}
+inline void ThetaMatrix::set_class_token(int index, const char* value, size_t size) {
+  class_token_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ThetaMatrix::add_class_token() {
+  return class_token_.Add();
+}
+inline void ThetaMatrix::add_class_token(const ::std::string& value) {
+  class_token_.Add()->assign(value);
+}
+inline void ThetaMatrix::add_class_token(const char* value) {
+  class_token_.Add()->assign(value);
+}
+inline void ThetaMatrix::add_class_token(const char* value, size_t size) {
+  class_token_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ThetaMatrix::class_token() const {
+  return class_token_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ThetaMatrix::mutable_class_token() {
+  return &class_token_;
+}
+
+// repeated string class_id = 10;
+inline int ThetaMatrix::class_id_size() const {
+  return class_id_.size();
+}
+inline void ThetaMatrix::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& ThetaMatrix::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* ThetaMatrix::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void ThetaMatrix::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void ThetaMatrix::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void ThetaMatrix::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ThetaMatrix::add_class_id() {
+  return class_id_.Add();
+}
+inline void ThetaMatrix::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void ThetaMatrix::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void ThetaMatrix::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ThetaMatrix::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ThetaMatrix::mutable_class_id() {
+  return &class_id_;
+}
+
 // -------------------------------------------------------------------
 
 // CollectionParserConfig
@@ -21674,6 +21934,76 @@ ProcessBatchesArgs::batch_weight() const {
 inline ::google::protobuf::RepeatedField< float >*
 ProcessBatchesArgs::mutable_batch_weight() {
   return &batch_weight_;
+}
+
+// optional string predict_class_id = 16;
+inline bool ProcessBatchesArgs::has_predict_class_id() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_predict_class_id() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void ProcessBatchesArgs::clear_has_predict_class_id() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void ProcessBatchesArgs::clear_predict_class_id() {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_->clear();
+  }
+  clear_has_predict_class_id();
+}
+inline const ::std::string& ProcessBatchesArgs::predict_class_id() const {
+  return *predict_class_id_;
+}
+inline void ProcessBatchesArgs::set_predict_class_id(const ::std::string& value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ProcessBatchesArgs::set_predict_class_id(const char* value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ProcessBatchesArgs::set_predict_class_id(const char* value, size_t size) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ProcessBatchesArgs::mutable_predict_class_id() {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  return predict_class_id_;
+}
+inline ::std::string* ProcessBatchesArgs::release_predict_class_id() {
+  clear_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = predict_class_id_;
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ProcessBatchesArgs::set_allocated_predict_class_id(::std::string* predict_class_id) {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete predict_class_id_;
+  }
+  if (predict_class_id) {
+    set_has_predict_class_id();
+    predict_class_id_ = predict_class_id;
+  } else {
+    clear_has_predict_class_id();
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------

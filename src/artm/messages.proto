@@ -116,6 +116,7 @@ message ModelConfig {
   optional bool use_new_tokens = 16 [default = true];
   optional bool opt_for_avx = 17 [default = true];
   repeated RegularizerSettings regularizer_settings = 18;
+  optional string predict_class_id = 19;
 }
 
 // Represents a configuration of a general regularizer
@@ -452,6 +453,10 @@ message ThetaMatrix {
   optional int32 topics_count = 5;
   repeated string item_title = 6;
   repeated IntArray topic_index = 7;
+
+  repeated FloatArray class_weights = 8;
+  repeated string class_token = 9;
+  repeated string class_id = 10;
 }
 
 // Represents a configuration of a collection parser.
@@ -616,6 +621,7 @@ message ProcessBatchesArgs {
   optional bool reset_scores = 13 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
+  optional string predict_class_id = 16;
 }
 
 message ProcessBatchesResult {

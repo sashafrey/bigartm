@@ -1055,8 +1055,8 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<DataLoaderCacheEntry> cache;
         boost::uuids::uuid batch_uuid = boost::lexical_cast<boost::uuids::uuid>(batch.id());
-        if (part->has_reuse_theta_cache_manager())
-          cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch_uuid, model_config.name());
+        if (part->has_cache_manager(CacheManager_Type_ReuseTheta))
+          cache = part->cache_manager(CacheManager_Type_ReuseTheta)->FindCacheEntry(batch_uuid, model_config.name());
         std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache.get());
 
         std::shared_ptr<ModelIncrement> model_increment;
@@ -1082,24 +1082,16 @@ void Processor::ThreadFunction() {
         int model_stream_index = repeated_field_index_of(stream_masks.stream_name(), model_config.stream_name());
         const Mask* stream_mask = (model_stream_index != -1) ? &stream_masks.stream_mask(model_stream_index) : nullptr;
 
-        std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr(nullptr);
-        if (part->has_cache_manager())
-          new_cache_entry_ptr.reset(new DataLoaderCacheEntry());
-
-        std::shared_ptr<DataLoaderCacheEntry> new_ptdw_cache_entry_ptr(nullptr);
-        if (part->has_ptdw_cache_manager())
-          new_ptdw_cache_entry_ptr.reset(new DataLoaderCacheEntry());
-
-        if (new_cache_entry_ptr != nullptr) {
-          new_cache_entry_ptr->set_batch_uuid(batch.id());
-          new_cache_entry_ptr->set_model_name(model_name);
-          new_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
+        std::shared_ptr<DataLoaderCacheEntry> cache_entry;
+        if (part->has_cache_manager(CacheManager_Type_StoreTheta)) {
+          cache_entry = part->cache_manager(CacheManager_Type_StoreTheta)->CreateCacheEntry(batch.id(), model_name);
+          cache_entry->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
         }
 
-        if (new_ptdw_cache_entry_ptr != nullptr) {
-          new_ptdw_cache_entry_ptr->set_batch_uuid(batch.id());
-          new_ptdw_cache_entry_ptr->set_model_name(model_name);
-          new_ptdw_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
+        std::shared_ptr<DataLoaderCacheEntry> ptdw_cache_entry;
+        if (part->has_cache_manager(CacheManager_Type_Ptdw)) {
+          ptdw_cache_entry = part->cache_manager(CacheManager_Type_Ptdw)->CreateCacheEntry(batch.id(), model_name);
+          ptdw_cache_entry->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
         }
 
         if (model_config.use_sparse_bow()) {
@@ -1107,34 +1099,61 @@ void Processor::ThreadFunction() {
           RegularizePtdwAgentCollection ptdw_agents;
           CreateRegularizerAgents(batch, model_config, *schema, &theta_agents, &ptdw_agents);
 
-          if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
+          if (ptdw_agents.empty() && !part->cache_manager(CacheManager_Type_Ptdw)) {
             CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
             InferThetaAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *sparse_ndw,
                                          p_wt, theta_agents, theta_matrix.get(), nwt_writer.get(),
-                                         blas, new_cache_entry_ptr.get());
+                                         blas, cache_entry.get());
           } else {
             CuckooWatch cuckoo2("InferPtdwAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
             InferPtdwAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *sparse_ndw,
                                         p_wt, theta_agents, ptdw_agents, theta_matrix.get(), nwt_writer.get(),
-                                        blas, new_cache_entry_ptr.get(),
-                                        new_ptdw_cache_entry_ptr.get());
+                                        blas, cache_entry.get(),
+                                        ptdw_cache_entry.get());
           }
         } else {
           CuckooWatch cuckoo2("InferThetaAndUpdateNwtDense", &cuckoo, kTimeLoggingThreshold);
           InferThetaAndUpdateNwtDense(model_config, batch, part->batch_weight(), stream_mask, *schema, *dense_ndw,
-                                      p_wt, theta_matrix.get(), nwt_writer.get(), blas, new_cache_entry_ptr.get());
+                                      p_wt, theta_matrix.get(), nwt_writer.get(), blas, cache_entry.get());
         }
 
         if (master_config.has_disk_cache_path()) {
-          SaveCache(new_ptdw_cache_entry_ptr, master_config);
-          SaveCache(new_cache_entry_ptr, master_config);
+          SaveCache(ptdw_cache_entry, master_config);
+          SaveCache(cache_entry, master_config);
         }
 
-        if (new_cache_entry_ptr != nullptr)
-          part->cache_manager()->UpdateCacheEntry(new_cache_entry_ptr);
+        if (cache_entry != nullptr)
+          part->cache_manager(CacheManager_Type_StoreTheta)->UpdateCacheEntry(cache_entry);
 
-        if (new_ptdw_cache_entry_ptr != nullptr)
-          part->ptdw_cache_manager()->UpdateCacheEntry(new_ptdw_cache_entry_ptr);
+        if (ptdw_cache_entry != nullptr)
+          part->cache_manager(CacheManager_Type_Ptdw)->UpdateCacheEntry(ptdw_cache_entry);
+
+        CacheManager* class_id_cache = part->cache_manager(CacheManager_Type_ClassId);
+        if (class_id_cache != nullptr) {
+          auto class_id_cache_entry = class_id_cache->CreateCacheEntry(batch.id(), model_name);
+          for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
+            const Token& token = p_wt.token(token_index);
+            if (token.class_id != model_config.predict_class_id)
+              continue;
+            
+            const int items_count = theta_matrix->no_columns();
+            topic_size
+            
+            class_id_cache_entry->add_topic_name(token.keyword);
+            for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+              float weight = 0.0;
+              for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+                weight += (*theta_matrix)(topic_index, item_index) * p_wt.get(token_index, topic_index);
+              }
+            }
+          }
+
+          part->cache_manager(CacheManager_Type_ClassId)->UpdateCacheEntry(class_id_cache_entry);
+        }
+        
+
+
+
 
         for (int score_index = 0; score_index < master_config.score_config_size(); ++score_index) {
           const ScoreName& score_name = master_config.score_config(score_index).name();

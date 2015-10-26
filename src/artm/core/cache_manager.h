@@ -19,6 +19,13 @@
 namespace artm {
 namespace core {
 
+enum CacheManager_Type {
+  CacheManager_Type_StoreTheta,
+  CacheManager_Type_Ptdw,
+  CacheManager_Type_ReuseTheta,
+  CacheManager_Type_ClassId,
+};
+
 class CacheManager : boost::noncopyable {
  public:
   explicit CacheManager();
@@ -31,6 +38,8 @@ class CacheManager : boost::noncopyable {
   std::shared_ptr<DataLoaderCacheEntry> FindCacheEntry(const boost::uuids::uuid& batch_uuid,
                                                        const ModelName& model_name) const;
   void UpdateCacheEntry(std::shared_ptr<DataLoaderCacheEntry> cache_entry) const;
+  std::shared_ptr<DataLoaderCacheEntry> CreateCacheEntry(const std::string& batch_id,
+                                                         const ModelName& model_name) const;
 
  private:
   typedef std::pair<boost::uuids::uuid, ModelName> CacheKey;

@@ -4,10 +4,13 @@
 #define SRC_ARTM_CORE_PROCESSOR_INPUT_H_
 
 #include <string>
+#include <vector>
+#include <utility>
 
 #include "boost/uuid/uuid.hpp"
 
 #include "artm/core/common.h"
+#include "artm/core/cache_manager.h"
 #include "artm/messages.pb.h"
 
 namespace artm {
@@ -33,9 +36,8 @@ class ProcessorInput {
 
   ProcessorInput() : batch_(), model_config_(), model_name_(), nwt_target_name_(),
                      batch_filename_(), batch_weight_(1.0f), task_id_(), notifiable_(nullptr),
-                     scores_merger_(nullptr), cache_manager_(nullptr),
-                     caller_(Caller::Unknown), ptdw_cache_manager_(nullptr),
-                     reuse_theta_cache_manager_(nullptr) {}
+                     scores_merger_(nullptr), cache_manager_(),
+                     caller_(Caller::Unknown) {}
 
   Batch* mutable_batch() { return &batch_; }
   const Batch& batch() const { return batch_; }
@@ -49,17 +51,9 @@ class ProcessorInput {
   ScoresMerger* scores_merger() const { return scores_merger_; }
   void set_scores_merger(ScoresMerger* scores_merger) { scores_merger_ = scores_merger; }
 
-  CacheManager* cache_manager() const { return cache_manager_; }
-  void set_cache_manager(CacheManager* cache_manager) { cache_manager_ = cache_manager; }
-  bool has_cache_manager() const { return cache_manager_ != nullptr; }
-
-  CacheManager* ptdw_cache_manager() const { return ptdw_cache_manager_; }
-  void set_ptdw_cache_manager(CacheManager* ptdw_cache_manager) { ptdw_cache_manager_ = ptdw_cache_manager; }
-  bool has_ptdw_cache_manager() const { return ptdw_cache_manager_ != nullptr; }
-
-  CacheManager* reuse_theta_cache_manager() const { return reuse_theta_cache_manager_; }
-  void set_reuse_theta_cache_manager(CacheManager* cache_manager) { reuse_theta_cache_manager_ = cache_manager; }
-  bool has_reuse_theta_cache_manager() const { return reuse_theta_cache_manager_ != nullptr; }
+  CacheManager* cache_manager(CacheManager_Type type) const;
+  void set_cache_manager(CacheManager_Type type, CacheManager* cache_manager);
+  bool has_cache_manager(CacheManager_Type type) const;
 
   const ModelName& model_name() const { return model_name_; }
   void set_model_name(const ModelName& model_name) { model_name_ = model_name; }
@@ -91,10 +85,8 @@ class ProcessorInput {
   boost::uuids::uuid task_id_;
   Notifiable* notifiable_;
   ScoresMerger* scores_merger_;
-  CacheManager* cache_manager_;
+  std::vector<std::pair<CacheManager_Type, CacheManager*>> cache_manager_;
   Caller caller_;
-  CacheManager* ptdw_cache_manager_;
-  CacheManager* reuse_theta_cache_manager_;
 };
 
 }  // namespace core

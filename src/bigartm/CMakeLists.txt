@@ -8,7 +8,23 @@ set(SRC_LIST
 	${CMAKE_SOURCE_DIR}/src/artm/messages.pb.cc
 )
 
+# Force to find Boost static libraries
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost COMPONENTS REQUIRED ${BIGARTM_BOOST_COMPONENTS})
+
 add_executable(bigartm ${SRC_LIST})
-target_link_libraries(bigartm artm ${Boost_LIBRARIES})
+# Set options to enable static linkage
+set(CMAKE_EXE_LINKER_FLAGS "-static")
+# These two options deny dynamic linking either via -Wl,-Bdynamic or another way.
+# https://cmake.org/cmake/help/v3.0/prop_tgt/LINK_SEARCH_START_STATIC.html
+set_target_properties(bigartm PROPERTIES LINK_SEARCH_START_STATIC ON)
+# Link against all necessary libraries
+target_link_libraries(bigartm
+	artm-static
+	${PROTOBUF_LIBRARIES}
+	${Boost_LIBRARIES}
+	${GLOG_LIBRARIES}
+	${LINK_DL})
 
 install(TARGETS bigartm DESTINATION bin)

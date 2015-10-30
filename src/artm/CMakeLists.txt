@@ -3,6 +3,8 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 # Static 'artm' library
 
 set(SRC_LIST
+	c_interface.cc
+	c_interface.h
 	messages.pb.cc
 	messages.pb.h
 	regularizer_interface.cc
